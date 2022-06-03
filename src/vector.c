@@ -43,7 +43,7 @@ void vec_set(vec_t *vec, size_t pos, void *elem) {
 void vec_resize(vec_t *vec, size_t size) {
     assert(vec);
 
-    void **data = realloc(vec->data, size);
+    void **data = realloc(vec->data, size * sizeof(void *));
     if (!data) error("vec_resize: realloc failed");
 
     vec->size = size;
