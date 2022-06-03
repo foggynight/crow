@@ -3,6 +3,8 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
 
+#include <stdio.h>
+
 extern const char *tok_del_drop; // token delimiters to drop
 extern const char *tok_del_keep; // token delimiters to tokenize
 
@@ -15,7 +17,6 @@ extern FILE *error_port;
 #ifdef GLOBAL_H_DEF
 #undef GLOBAL_H_DEF
 
-#include <stdio.h>
 #include <unistd.h>
 
 const char *tok_del_drop = " \f\n\r\t\v";
