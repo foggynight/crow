@@ -43,10 +43,8 @@ char *str_tok(const char *str, const char *del_drop, const char *del_keep) {
 
     // Extract and return the next token from the string, or return NULL if
     // there are no remaining tokens.
-    size_t start = next;       // start of substring
-    const size_t init = start; // initial value of start
-
-    bool found = false; // found a token to extract
+    bool found = false;  // found a token to extract
+    size_t start = next; // start of substring
     for (; next < len; ++next) {
         const char c = dup[next];
         if (c == '\0') {
@@ -67,6 +65,5 @@ char *str_tok(const char *str, const char *del_drop, const char *del_keep) {
             }
         }
     }
-
     return found ? str_sub(dup, start, next) : NULL;
 }
