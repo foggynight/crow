@@ -9,7 +9,9 @@ tok_t *lex_word(char *word) {
     switch (word[0]) {
         case '(': type = PAREN_OPEN; break;
         case ')': type = PAREN_CLOSE; break;
-        default: type = SYMBOL;
+        default:
+            if (str_is_numeric(word)) type = NUMBER;
+            else type = SYMBOL;
     }
     return make_tok(type, word);
 }

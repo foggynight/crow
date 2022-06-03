@@ -3,7 +3,10 @@
 #ifndef STRING_H
 #define STRING_H
 
+#include <stdbool.h>
 #include <stddef.h>
+
+bool str_is_numeric(const char *str); // Does str contain only decimal digits?
 
 // Make a copy of the [start, end) substring of str, returns a pointer to the
 // copy on success, returns NULL on failure.
