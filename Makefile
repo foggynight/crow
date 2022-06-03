@@ -1,4 +1,4 @@
-SRC := src/main.c src/vector.c
+SRC := src/lexer.c src/main.c src/string.c src/token.c src/vector.c
 
 .PHONY: all
 all:
@@ -10,6 +10,4 @@ debug:
 
 .PHONY: test
 test:
-	gcc -o temp test/string.c src/string.c
-	./temp
-	rm temp
+	gcc -o temp test/string.c src/string.c && ./temp && rm temp
