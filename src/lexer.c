@@ -1,5 +1,6 @@
 #include "lexer.h"
 
+#include "global.h"
 #include "string.h"
 #include "token.h"
 #include "vector.h"
@@ -17,12 +18,9 @@ tok_t *lex_word(char *word) {
 }
 
 void lex_str(char *str, vec_t *toks) {
-    const char *del_drop = " \f\n\r\t\v"; // drop all whitespace
-    const char *del_keep = "()";          // tokenize parentheses
-
-    for (char *word = str_tok(str, del_drop, del_keep);
+    for (char *word = str_tok(str, tok_del_drop, tok_del_keep);
          word != NULL;
-         word = str_tok(NULL, del_drop, del_keep))
+         word = str_tok(NULL, tok_del_drop, tok_del_keep))
     {
         tok_t *tok = lex_word(word);
         vec_push(toks, tok);

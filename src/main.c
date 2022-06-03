@@ -2,6 +2,9 @@
 
 #include "lexer.h"
 
+#define GLOBAL_H_DEF
+#include "global.h"
+
 int main(void) {
     vec_t *toks = make_vec(1);
     lex_str("(foo 2 bar 3 (baz 42))", toks);
