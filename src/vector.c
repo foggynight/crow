@@ -51,7 +51,10 @@ void vec_resize(vec_t *vec, size_t size) {
 }
 
 void vec_grow(vec_t *vec) {
-    vec_resize(vec, vec->size * 2);
+    if (vec->size)
+        vec_resize(vec, vec->size * 2);
+    else
+        vec_resize(vec, 1);
 }
 
 void vec_push(vec_t *vec, void *elem) {
