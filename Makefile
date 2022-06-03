@@ -1,7 +1,7 @@
 PRG := crow
 
 WRN := -Wall -Wextra -Wpedantic
-SRC := src/lexer.c src/main.c src/string.c src/token.c src/vector.c
+SRC := src/*
 
 .PHONY: all
 all:
