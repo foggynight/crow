@@ -7,3 +7,9 @@ all:
 .PHONY: debug
 debug:
 	gcc -o crow -g $(SRC)
+
+.PHONY: test
+test:
+	gcc -o temp test/string.c src/string.c
+	./temp
+	rm temp
