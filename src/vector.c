@@ -8,7 +8,7 @@
 #include "error.h"
 
 vec_t *make_vec(size_t size) {
-    vec_t *vec = malloc(sizeof vec);
+    vec_t *vec = malloc(sizeof *vec);
     if (!vec) error("make_vec: malloc failed");
 
     void **data = malloc(size * sizeof(void *));
