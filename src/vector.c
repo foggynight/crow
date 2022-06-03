@@ -76,13 +76,3 @@ void *vec_pop(vec_t *vec) {
     --(vec->last);
     return vec_get(vec, vec->last);
 }
-
-void print_vec(vec_t *vec) {
-    putchar('[');
-    for (size_t i = 0; i < vec->size; ++i)
-        printf("%c%d%c",
-               (i == vec->last) ? '_' : '\0',
-               vec_get(vec, i),
-               (i < vec->size - 1) ? ' ' : '\0');
-    puts("]");
-}
