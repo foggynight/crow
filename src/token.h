@@ -6,6 +6,8 @@
 typedef enum tok_type {
     SYMBOL,
     NUMBER,
+    CHARACTER,
+    STRING,
     PAREN_OPEN,
     PAREN_CLOSE
 } tok_type_t ;
