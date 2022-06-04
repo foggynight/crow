@@ -26,6 +26,6 @@ FILE *error_port  = (FILE *)STDERR_FILENO;
 
 const char *delim_drop = " \f\n\r\t\v";
 const char *delim_keep = "()";
-const char *delim_str = "\"";
+const char *delim_str  = "\"";
 
 #endif // GLOBAL_H_DEF

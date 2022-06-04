@@ -1,9 +1,7 @@
 #include "lexer.h"
 
-#include "global.h"
 #include "string.h"
 #include "token.h"
-#include "vector.h"
 
 tok_t *lex_word(char *word) {
     tok_type_t type;
