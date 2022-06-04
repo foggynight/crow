@@ -6,6 +6,6 @@
 #include "vector.h"
 
 char *read_word(FILE *file);
-vec_t *read_sexp(FILE *file);
+void read_sexp(FILE *file, vec_t *words);
 
 #endif // READER_H
