@@ -39,7 +39,7 @@ void read_sexp(FILE *file, vec_t *words) {
         else if (word[0] == '(') { ++stk; }
         else if (word[0] == ')') {
             if (stk == 0)
-                error("unexpected list terminator: %c", word[0]);
+                error("read_sexp: unexpected list terminator");
             --stk;
         }
         vec_push(words, word);
