@@ -14,47 +14,49 @@ vec_t *make_vec(size_t size) {
     void **data = malloc(size * sizeof(void *));
     if (!data) error("make_vec: malloc failed");
 
-    vec->size = size;
-    vec->last = 0;
-    vec->data = data;
+    vec->buf = data;
+    vec->buf_size = size;
+    vec->vec_size = 0;
 
     return vec;
 }
 
 void dest_vec(vec_t *vec) {
-    assert(vec && vec->data);
-    free(vec->data);
+    assert(vec && vec->buf);
+    free(vec->buf);
     free(vec);
 }
 
-bool vec_is_empty(vec_t *vec) { return vec->last == 0; }
-bool vec_is_full(vec_t *vec) { return vec->last >= vec->size; }
+bool vec_is_empty(vec_t *vec) { return vec_size(vec) == 0; }
+bool vec_is_full(vec_t *vec) { return vec_size(vec) >= vec->buf_size; }
 
-void *vec_get(vec_t *vec, size_t pos) {
-    assert(pos < vec->size);
-    return vec->data[pos];
-}
-
-void vec_set(vec_t *vec, size_t pos, void *elem) {
-    assert(pos < vec->size);
-    vec->data[pos] = elem;
-}
+size_t vec_size(vec_t *vec) { return vec->vec_size; }
 
 void vec_resize(vec_t *vec, size_t size) {
     assert(vec);
 
-    void **data = realloc(vec->data, size * sizeof(void *));
+    void **data = realloc(vec->buf, size * sizeof(void *));
     if (!data) error("vec_resize: realloc failed");
 
-    vec->size = size;
-    vec->data = data;
+    vec->buf = data;
+    vec->buf_size = size;
 }
 
 void vec_grow(vec_t *vec) {
-    if (vec->size)
-        vec_resize(vec, vec->size * 2);
+    if (vec->buf_size)
+        vec_resize(vec, vec->buf_size * 2);
     else
         vec_resize(vec, 1);
+}
+
+void *vec_get(vec_t *vec, size_t pos) {
+    assert(pos < vec->buf_size);
+    return vec->buf[pos];
+}
+
+void vec_set(vec_t *vec, size_t pos, void *elem) {
+    assert(pos < vec->buf_size);
+    vec->buf[pos] = elem;
 }
 
 void vec_push(vec_t *vec, void *elem) {
@@ -63,8 +65,8 @@ void vec_push(vec_t *vec, void *elem) {
     if (vec_is_full(vec))
         vec_grow(vec);
 
-    vec_set(vec, vec->last, elem);
-    ++(vec->last);
+    vec_set(vec, vec->vec_size, elem);
+    ++(vec->vec_size);
 }
 
 void *vec_pop(vec_t *vec) {
@@ -73,6 +75,6 @@ void *vec_pop(vec_t *vec) {
     if (vec_is_empty(vec))
         error("vec_pop: empty vector");
 
-    --(vec->last);
-    return vec_get(vec, vec->last);
+    --(vec->vec_size);
+    return vec_get(vec, vec->vec_size);
 }
