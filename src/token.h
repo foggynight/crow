@@ -10,7 +10,7 @@ typedef enum tok_type {
     STRING,
     PAREN_OPEN,
     PAREN_CLOSE
-} tok_type_t ;
+} tok_type_t;
 
 typedef struct tok {
     tok_type_t type;
