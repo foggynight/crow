@@ -19,3 +19,6 @@ void dest_tok(tok_t *tok) {
     free(tok->word);
     free(tok);
 }
+
+tok_type_t tok_type(tok_t *tok) { return tok->type; }
+char *tok_word(tok_t *tok) { return tok->word; }
