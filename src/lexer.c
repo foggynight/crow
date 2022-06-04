@@ -16,13 +16,3 @@ tok_t *lex_word(char *word) {
     }
     return make_tok(type, word);
 }
-
-void lex_str(char *str, vec_t *toks) {
-    for (char *word = str_tok(str, delim_drop, delim_keep);
-         word != NULL;
-         word = str_tok(NULL, delim_drop, delim_keep))
-    {
-        tok_t *tok = lex_word(word);
-        vec_push(toks, tok);
-    }
-}
