@@ -1,9 +1,9 @@
 # Context-Free Grammar
 
-    SEXP -> ATOM | ' SEXP | ( SEXP TAIL )
+    SEXP -> ATOM | ' SEXP | ( XS )
 
     ATOM -> SYMBOL | BOOL | NUMBER | CHARACTER | STRING
-    TAIL -> SEXP TAIL | epsilon
+    XS -> SEXP XS | epsilon
 
     SYMBOL -> ...
     NUMBER -> [0-9]+ | -[0-9]+

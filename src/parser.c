@@ -32,13 +32,13 @@ static void atom(void) {
 
 static void sexp(void);
 
-static void tail(void) {
+static void xs(void) {
     if (!tok) parse_error();
 
     const tok_type_t t = tok->type;
     if (tok_type_is_atom(t) || t == QUOTE || t == PAREN_OPEN) {
         sexp();
-        tail();
+        xs();
     } else if (t == PAREN_CLOSE) {
         return;
     } else {
@@ -57,8 +57,7 @@ static void sexp(void) {
         sexp();
     } else if (type == PAREN_OPEN) {
         match(PAREN_OPEN);
-        sexp();
-        tail();
+        xs();
         match(PAREN_CLOSE);
     } else {
         parse_error();
