@@ -31,7 +31,7 @@ char *read_word(FILE *file) {
     return next ? strdup(word) : NULL;
 }
 
-void read_sexp(FILE *file, vec_t *words) {
+size_t read_sexp(FILE *file, vec_t *words) {
     size_t stk = 0;
     do {
         char *word = read_word(file);
@@ -44,4 +44,5 @@ void read_sexp(FILE *file, vec_t *words) {
         }
         vec_push(words, word);
     } while (stk > 0);
+    return vec_size(words);
 }
