@@ -1,5 +1,6 @@
 #include "token.h"
 
+#include <stdbool.h>
 #include <stdlib.h>
 
 #include "error.h"
@@ -19,5 +20,14 @@ void dest_tok(tok_t *tok) {
     free(tok);
 }
 
-tok_type_t tok_type(tok_t *tok) { return tok->type; }
-char *tok_word(tok_t *tok) { return tok->word; }
+bool tok_is_atom(tok_t *tok) {
+    return tok ? tok_type_is_atom(tok->type) : false;
+}
+
+bool tok_type_is_atom(tok_type_t type) {
+    return type == SYMBOL
+        || type == BOOL
+        || type == NUMBER
+        || type == CHARACTER
+        || type == STRING;
+}
