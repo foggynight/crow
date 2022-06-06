@@ -9,7 +9,7 @@
 
 int main(void) {
     vec_t *words = make_vec(1);
-    read_sexp(stdin, words);
+    read_sexp_str("(test)", words);
 
     vec_t *toks = make_vec(1);
     for (size_t i = 0; i < vec_size(words); ++i)
