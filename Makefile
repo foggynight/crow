@@ -9,7 +9,7 @@ all:
 
 .PHONY: debug
 debug:
-	gcc -o $(PROG) -g $(WRN) $(SRC)
+	gcc -o $(PRG) -g $(WRN) $(SRC)
 
 .PHONY: test
 test:
