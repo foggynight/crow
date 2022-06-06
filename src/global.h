@@ -11,7 +11,6 @@ extern FILE *error_port;
 
 extern const char *delim_drop; // token delimiters to drop
 extern const char *delim_keep; // token delimiters to tokenize
-extern const char *delim_str;  // string token delimiters
 
 #endif // GLOBAL_H
 
@@ -25,7 +24,6 @@ FILE *output_port = (FILE *)STDOUT_FILENO;
 FILE *error_port  = (FILE *)STDERR_FILENO;
 
 const char *delim_drop = " \f\n\r\t\v";
-const char *delim_keep = "()";
-const char *delim_str  = "\"";
+const char *delim_keep = "'()";
 
 #endif // GLOBAL_H_DEF

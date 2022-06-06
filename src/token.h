@@ -6,14 +6,8 @@
 #include <stdbool.h>
 
 typedef enum tok_type {
-    SYMBOL,
-    BOOL,
-    NUMBER,
-    CHARACTER,
-    STRING,
-    QUOTE,
-    PAREN_OPEN,
-    PAREN_CLOSE
+    SYMBOL, BOOL, NUMBER, CHARACTER, STRING,
+    QUOTE, PAREN_OPEN, PAREN_CLOSE
 } tok_type_t;
 
 typedef struct tok {

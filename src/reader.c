@@ -35,17 +35,17 @@ char *read_word(FILE *file) {
 
 size_t read_sexp(FILE *file, vec_t *words) {
     size_t stk = 0;
-    do {
-        char *word = read_word(file);
-        if (word == NULL) { break; }
-        else if (word[0] == '(') { ++stk; }
+    for (char *word; (word = read_word(file)) != NULL;) {
+        if (word[0] == '(') { ++stk; }
         else if (word[0] == ')') {
             if (stk == 0)
-                error("read_sexp: unexpected list terminator");
+                error("unexpected list terminator");
             --stk;
         }
         vec_push(words, word);
-    } while (stk > 0);
+        if (stk == 0 && word[0] != '\'')
+            break;
+    }
     return vec_size(words);
 }
 
