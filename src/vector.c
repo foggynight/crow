@@ -49,6 +49,10 @@ void vec_grow(vec_t *vec) {
         vec_resize(vec, 1);
 }
 
+void vec_clear(vec_t *vec) {
+    vec->vec_size = 0;
+}
+
 void *vec_get(vec_t *vec, size_t pos) {
     assert(pos < vec->buf_size);
     return vec->buf[pos];

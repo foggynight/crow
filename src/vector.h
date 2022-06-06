@@ -20,6 +20,8 @@ bool vec_is_full(vec_t *vec);
 
 size_t vec_size(vec_t *vec);
 void vec_resize(vec_t *vec, size_t size);
+void vec_grow(vec_t *vec);
+void vec_clear(vec_t *vec);
 
 void *vec_get(vec_t *vec, size_t pos);
 void vec_set(vec_t *vec, size_t pos, void *elem);
