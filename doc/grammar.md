@@ -2,10 +2,11 @@
 
     SEXP -> ATOM | ' SEXP | ( REST )
 
-    ATOM -> SYMBOL | BOOL | NUMBER | CHARACTER | STRING
+    ATOM -> SYM | BOOL | NUM | CHAR | STR
     REST -> SEXP REST | epsilon
 
-    SYMBOL -> ...
-    NUMBER -> [0-9]+ | -[0-9]+
-    CHARACTER -> #\[ASCII]
-    STRING -> ...
+    SYM  -> [^'()]+
+    BOOL -> #t | #f
+    NUM  -> [0-9]+ | -[0-9]+
+    CHAR -> #\[ASCII]
+    STR  -> " ... "
