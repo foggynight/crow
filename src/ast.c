@@ -26,7 +26,7 @@ void dest_ast(ast_t *ast) {
 
 // These two functions should never both be called on the same AST.
 
-void ast_set_root(ast_t *ast, tok_t *root) {
+void ast_set_tok(ast_t *ast, tok_t *token) {
     ast->root = root;
 }
 

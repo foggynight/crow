@@ -12,14 +12,14 @@
 typedef struct ast {
     bool atom;       // Does this AST represent an atom, instead of a list?
     bool eval;       // Should this AST be evaluated, instead of quoted?
-    tok_t *root;     // Token if this AST is an atom, otherwise NULL.
+    tok_t *tok;      // Token if this AST is an atom, otherwise NULL.
     vec_t *children; // Vector of ASTs if this AST is a list, otherwise NULL.
 } ast_t;
 
 ast_t *make_ast(void);
 void dest_ast(ast_t *ast);
 
-void ast_set_root(ast_t *ast, tok_t *root);
+void ast_set_tok(ast_t *ast, tok_t *token);
 void ast_add_child(ast_t *ast, ast_t *child);
 
 #endif // AST_H
