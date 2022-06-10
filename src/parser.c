@@ -13,6 +13,9 @@ static size_t cnt;  // number of tokens to parse
 static tok_t *tok; // current token being parsed
 static size_t pos; // index of current token in toks
 
+static ast_t *ast_quote =
+    &(ast_t){ .type = AST_ATOM, .tok = TOK_QUOTE, .children = NULL };
+
 static void parse_error(void) {
     error("parse error");
 }
@@ -27,15 +30,31 @@ static void match(tok_type_t type) {
     else parse_error();
 }
 
+static ast_t *sexp(ast_t *ast);
+
 static ast_t *atom(ast_t *ast) {
     if (!tok || !tok_is_atom(tok))
         parse_error();
+
+    ast->type = AST_ATOM;
     ast_set_tok(ast, tok);
+
     match(tok->type);
     return ast;
 }
 
-static ast_t *sexp(ast_t *ast);
+static ast_t *quote(ast_t *ast) {
+    if (!tok || tok->type != QUOTE)
+        parse_error();
+    match(QUOTE);
+
+    if (!ast) ast = make_ast();
+    ast->type = AST_LIST;
+    ast_add_child(ast, ast_quote);
+    ast_add_child(ast, sexp(NULL));
+
+    return ast;
+}
 
 static size_t rest(ast_t *ast, size_t cnt) {
     if (!tok) parse_error();
@@ -57,12 +76,9 @@ static ast_t *sexp(ast_t *ast) {
 
     if (!ast) ast = make_ast();
     if (tok_is_atom(tok)) {
-        ast->type = AST_ATOM;
         return atom(ast);
     } else if (tok->type == QUOTE) {
-        match(QUOTE);
-        ast->eval = AST_QUOTE;
-        return sexp(ast);
+        return quote(ast);
     } else if (tok->type == PAREN_OPEN) {
         match(PAREN_OPEN);
         size_t cnt = rest(ast, 0);

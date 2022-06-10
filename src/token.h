@@ -5,6 +5,8 @@
 
 #include <stdbool.h>
 
+#define TOK_QUOTE &(tok_t){ .type = QUOTE, .word = "quote" }
+
 typedef enum tok_type {
     SYMBOL, BOOL, NUMBER, CHARACTER, STRING,
     QUOTE, PAREN_OPEN, PAREN_CLOSE

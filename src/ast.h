@@ -8,17 +8,13 @@
 #include "token.h"
 #include "vector.h"
 
-#define AST_NULL 0
-#define AST_ATOM 1
-#define AST_LIST 2
-
-#define AST_QUOTE 0
-#define AST_EVAL  1
+typedef enum ast_type {
+    AST_NULL, AST_ATOM, AST_LIST
+} ast_type_t;
 
 // Abstract syntax tree structure.
 typedef struct ast {
-    char type;       // Type of this AST, null, atom, or list.
-    bool eval;       // Should this AST be eval'd, instead of quote'd?
+    ast_type_t type; // Type of this AST, null, atom, or list.
     tok_t *tok;      // Token if this AST is an atom, otherwise NULL.
     vec_t *children; // Vector of ASTs if this AST is a list, otherwise NULL.
 } ast_t;
