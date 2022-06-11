@@ -1,21 +1,41 @@
-;; crow.scm - CROW evaluator and REPL in CHICKEN Scheme
+;; crow.scm - CROW metacircular evaluator and REPL in CHICKEN Scheme
 ;;
 ;; This will be used to test ideas for CROW, and will be replaced by the
 ;; interpreter written in C.
 
 (import chicken.format)
 
-;; Environments ----------------------------------------------------------------
+;; misc ------------------------------------------------------------------------
 
-(define (lookup) (void))
-(define (bind) (void))
+(define (zip keys dats)
+  (map (lambda (x y) (cons x y)) keys dats))
 
-;; Primitives ------------------------------------------------------------------
+;; environment -----------------------------------------------------------------
 
-(define (primitive?) (void))
-(define (papply proc args) (void))
+(define (lookup sym env)
+  (if (null? env)
+      (error 'lookup "unbound symbol" sym)
+      ((lambda (cell)
+         (if cell
+             (cdr cell)
+             (lookup sym (cdr env))))
+       (assq sym (car env)))))
 
-;; Closures --------------------------------------------------------------------
+(define (bind keys dats env)
+  (cons (zip keys dats) env))
+
+;; primitive -------------------------------------------------------------------
+
+(define primitives
+  `((+ . ,(lambda args (apply + args)))
+    (- . ,(lambda args (apply - args)))
+    (* . ,(lambda args (apply * args)))
+    (/ . ,(lambda args (apply / args)))))
+
+(define (primitive? proc) (procedure? proc))
+(define (papply proc args) (apply proc args))
+
+;; closure ---------------------------------------------------------------------
 ;;
 ;; Closures represent procedures with zero or more free variables bound within
 ;; an environment, they are represented lists of the form:
@@ -29,10 +49,19 @@
 (define (closure? exp) (eq? (car exp) 'closure))
 
 (define closure-args caadr)
-(define closure-proc cadadr)
+(define closure-body cadadr)
 (define closure-env caddr)
 
-;; Meta-Circular Evaluator -----------------------------------------------------
+;; evaluator -------------------------------------------------------------------
+
+(define toplevel (list primitives)) ; toplevel environment
+
+(define (evlist lst env) (map (lambda (x) (crow-eval x env)) lst))
+(define (evcond clauses env)
+  (cond ((null? clauses) '())
+        ((eq? (caar clauses) 'else) (crow-eval (cadar clauses) env))
+        ((null? (crow-eval (caar clauses) env)) (evcond (cdr clauses) env))
+        (else (crow-eval (cadar clauses) env))))
 
 (define (crow-eval exp env)
   (cond ((number? exp) exp)
@@ -42,20 +71,20 @@
                 ((lambda %) (closure exp env))
                 ((cond) (evcond (cdr exp) env))
                 (else (crow-apply (crow-eval (car exp) env)
-                                  (crow-evlist (cdr exp) env)))))))
+                                  (evlist (cdr exp) env)))))))
 
 (define (crow-apply proc args)
   (cond ((primitive? proc) (papply proc args))
-        ((closure? proc) (eval (closure-proc exp)
-                               (bind (closure-args exp)
-                                     args
-                                     (closure-env exp))))
-        (else (printf "not a primitive or closure: ~A~%" exp))))
+        ((closure? proc) (crow-eval (closure-body proc)
+                                    (bind (closure-args proc)
+                                          args
+                                          (closure-env proc))))
+        (else (error 'crow-apply "not a primitive or closure" exp))))
 
-;; REPL ------------------------------------------------------------------------
+;; repl ------------------------------------------------------------------------
 
 (define (crow-repl)
   (do () (#f)
-    (print (crow-eval (read) '()))))
+    (print (crow-eval (read) toplevel))))
 
 (crow-repl)
