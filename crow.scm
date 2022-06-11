@@ -26,17 +26,6 @@
 (define (bind keys dats env)
   (cons (zip keys dats) env))
 
-;; primitive -------------------------------------------------------------------
-
-(define primitives
-  `((+ . ,(lambda args (apply + args)))
-    (- . ,(lambda args (apply - args)))
-    (* . ,(lambda args (apply * args)))
-    (/ . ,(lambda args (apply / args)))))
-
-(define (primitive? proc) (procedure? proc))
-(define (papply proc args) (apply proc args))
-
 ;; closure ---------------------------------------------------------------------
 ;;
 ;; Closures represent procedures with zero or more free variables bound within
@@ -55,8 +44,6 @@
 (define closure-env caddr)
 
 ;; evaluator -------------------------------------------------------------------
-
-(define toplevel (list primitives)) ; toplevel environment
 
 (define (evlist lst env) (map (lambda (x) (crow-eval x env)) lst))
 (define (evcond clauses env)
@@ -83,7 +70,20 @@
                                           (closure-env proc))))
         (else (error 'crow-apply "not a primitive or closure" exp))))
 
+;; primitive -------------------------------------------------------------------
+
+(define primitives
+  `((+ . ,(lambda args (apply + args)))
+    (- . ,(lambda args (apply - args)))
+    (* . ,(lambda args (apply * args)))
+    (/ . ,(lambda args (apply / args)))))
+
+(define (primitive? proc) (procedure? proc))
+(define (papply proc args) (apply proc args))
+
 ;; repl ------------------------------------------------------------------------
+
+(define toplevel (list primitives)) ; toplevel environment
 
 (define (crow-repl)
   (do () (#f)
