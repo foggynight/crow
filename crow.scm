@@ -1,3 +1,5 @@
+#!/usr/bin/env -S csi -q
+
 ;; crow.scm - CROW metacircular evaluator and REPL in CHICKEN Scheme
 ;;
 ;; This will be used to test ideas for CROW, and will be replaced by the
@@ -38,7 +40,7 @@
 ;; closure ---------------------------------------------------------------------
 ;;
 ;; Closures represent procedures with zero or more free variables bound within
-;; an environment, they are represented lists of the form:
+;; an environment, they are represented by lists of the form:
 ;;
 ;;   ('closure (args body) env)
 ;;
