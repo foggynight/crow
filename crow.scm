@@ -80,7 +80,7 @@
   (define body-false (if (null? (cddr exp)) '() (caddr exp)))
   (if (true? (crow-eval pred env))
       (crow-eval body-true env)
-      (if (null? body-false)
+      (if (false? body-false)
           '()
           (crow-eval body-false env))))
 
