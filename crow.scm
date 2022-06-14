@@ -108,12 +108,7 @@
     ((let) (evlet (cdr exp) env))
     ((def define)
      (if toplvl
-         (let* ((par (evdef (cdr exp) env))
-                (key (car par))
-                (dat (cdr par)))
-           (when (closure? dat)   ; insert self into own environment
-             (env-insert! (closure-env dat) par))
-           (env-insert! env par)) ; insert into toplevel environment
+         (env-insert! env (evdef (cdr exp) env))
          (error 'crow-eval "definition outside toplevel")))
     (else #f)))
 
