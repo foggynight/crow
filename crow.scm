@@ -22,6 +22,7 @@
 
 (define true? (compose not null?))
 (define false? null?)
+(define (bool->atom bool) (if bool 't '()))
 
 (define (list-cars lst) (map car lst))
 (define (list-cadrs lst) (map cadr lst))
@@ -129,17 +130,61 @@
 
 ;; primitive -------------------------------------------------------------------
 
-(define primitives
-  `((toplevel . ,(lambda () toplevel))
-    (+ . ,(lambda args (apply + args)))
-    (- . ,(lambda args (apply - args)))
-    (* . ,(lambda args (apply * args)))
-    (/ . ,(lambda args (apply / args)))
-    (= . ,(lambda args (if (apply = args) 't '())))
-    (> . ,(lambda args (if (apply > args) 't '())))
-    (< . ,(lambda args (if (apply < args) 't '())))
-    (>= . ,(lambda args (if (apply > args) 't '())))
-    (<= . ,(lambda args (if (apply < args) 't '())))))
+(define primitives `(
+  ;; environment
+  (toplevel . ,(lambda () toplevel))
+
+  ;; eval / apply
+  (eval . ,crow-eval)
+  (apply . ,crow-apply)
+
+  ;; symbol
+  (sym? . ,(compose bool->atom symbol?))
+  (sym->str . ,symbol->string)
+  (str->sym . ,string->symbol)
+
+  ;; atom
+  (atom? . ,(compose bool->atom atom?))
+
+  ;; cons
+  (cons . ,cons)
+  (cons? . ,(compose bool->atom pair?))
+  (car . ,car)
+  (cdr . ,cdr)
+
+  ;; list
+  (list . ,list)
+  (null? . ,(compose bool->atom null?))
+  (list? . ,(compose bool->atom list?))
+  (length . ,length)
+  (list-ref . ,list-ref)
+
+  ;; number
+  (+ . ,+)
+  (- . ,-)
+  (* . ,*)
+  (/ . ,/)
+  (// . ,(lambda args ((compose floor inexact->exact)
+                       (apply / args))))
+  (= . ,(lambda args (bool->atom (apply = args))))
+  (<> . ,(lambda args (bool->atom (not (apply = args)))))
+  (> . ,(lambda args (bool->atom (apply > args))))
+  (< . ,(lambda args (bool->atom (apply < args))))
+  (>= . ,(lambda args (bool->atom (apply > args))))
+  (<= . ,(lambda args (bool->atom (apply < args))))
+  (floor . ,(compose floor inexact->exact))
+  (ceil . ,(compose ceiling inexact->exact))
+  (trunc . ,(compose truncate inexact->exact))
+  (float . ,exact->inexact)
+
+  ;; string
+  (str . ,string)
+  (str? . ,string?)
+  (str-len . ,string-length)
+  (str-ref . ,string-ref)
+  (str-set! . ,string-set!)
+  (str->list . ,string->list)
+)) ; primitives
 
 (define (primitive? proc) (procedure? proc))
 (define (papply proc args) (apply proc args))
