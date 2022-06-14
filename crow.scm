@@ -84,6 +84,22 @@
           '()
           (crow-eval body-false env))))
 
+(define (evand exp last env)
+  (if (null? exp)
+      last
+      (let ((val (crow-eval (car exp) env)))
+        (if (false? val)
+            '()
+            (evand (cdr exp) val env)))))
+
+(define (evor exp last env)
+  (if (null? exp)
+      last
+      (let ((val (crow-eval (car exp) env)))
+        (if (true? val)
+            val
+            (evor (cdr exp) val env)))))
+
 (define (evlet exp env)
   (define binds (car exp))
   (define body (cadr exp))
@@ -105,6 +121,8 @@
     ((% lambda) (closure exp env))
     ((cond) (evcond (cdr exp) env))
     ((if) (evif (cdr exp) env))
+    ((and) (evand (cdr exp) 't env))
+    ((or) (evor (cdr exp) '() env))
     ((let) (evlet (cdr exp) env))
     ((def define)
      (if toplvl
