@@ -20,11 +20,17 @@
 
 ;; misc ------------------------------------------------------------------------
 
+(define true? (compose not null?))
+(define false? null?)
+
 (define (alist-copy lst)
   (if (null? lst)
       '()
       (cons (cons (caar lst) (cdar lst))
             (alist-copy (cdr lst)))))
+
+(define (list-cars lst) (map car lst))
+(define (list-cadrs lst) (map cadr lst))
 
 (define (zip keys dats)
   (map (lambda (x y) (cons x y)) keys dats))
@@ -76,8 +82,26 @@
 (define (evcond clauses env)
   (cond ((null? clauses) '())
         ((eq? (caar clauses) 'else) (crow-eval (cadar clauses) env))
-        ((null? (crow-eval (caar clauses) env)) (evcond (cdr clauses) env))
+        ((false? (crow-eval (caar clauses) env)) (evcond (cdr clauses) env))
         (else (crow-eval (cadar clauses) env))))
+
+(define (evif exp env)
+  (define pred (car exp))
+  (define body-true (cadr exp))
+  (define body-false (if (null? (cddr exp)) '() (caddr exp)))
+  (if (true? (crow-eval pred env))
+      (crow-eval body-true env)
+      (if (null? body-false)
+          '()
+          (crow-eval body-false env))))
+
+(define (evlet exp env)
+  (define binds (car exp))
+  (define body (cadr exp))
+  (crow-eval body
+             (bind (list-cars binds)
+                   (evlist (list-cadrs binds) env)
+                   env)))
 
 (define (evdef def env)
   (cond ((null? def) (error 'evdef "invalid definition"))
@@ -86,24 +110,30 @@
                     (crow-eval (cons 'lambda (cons (cdar def) (cdr def)))
                                env)))))
 
+(define (evspec exp env toplvl)
+  (case (car exp)
+    ((quote) (cadr exp))
+    ((% lambda) (closure exp env))
+    ((cond) (evcond (cdr exp) env))
+    ((if) (evif (cdr exp) env))
+    ((let) (evlet (cdr exp) env))
+    ((def define)
+     (if toplvl
+         (let* ((par (evdef (cdr exp) env))
+                (key (car par))
+                (dat (cdr par)))
+           (when (closure? dat)   ; insert self into own environment
+             (env-insert! (closure-env dat) par))
+           (env-insert! env par)) ; insert into toplevel environment
+         (error 'crow-eval "definition outside toplevel")))
+    (else #f)))
+
 (define (crow-eval exp env #!optional toplvl)
   (cond ((number? exp) exp)
         ((symbol? exp) (lookup exp env))
-        (else (case (car exp)
-                ((quote) (cadr exp))
-                ((% lambda) (closure exp env))
-                ((cond) (evcond (cdr exp) env))
-                ((def define)
-                 (if toplvl
-                     (let* ((par (evdef (cdr exp) env))
-                            (key (car par))
-                            (dat (cdr par)))
-                       (when (closure? dat)   ; insert self into own environment
-                         (env-insert! (closure-env dat) par))
-                       (env-insert! env par)) ; insert into toplevel environment
-                     (error 'crow-eval "definition outside toplevel")))
-                (else (crow-apply (crow-eval (car exp) env)
-                                  (evlist (cdr exp) env)))))))
+        ((evspec exp env toplvl)) ; returns false when exp is not a special form
+        (else (crow-apply (crow-eval (car exp) env)
+                          (evlist (cdr exp) env)))))
 
 (define (crow-apply proc args)
   (cond ((primitive? proc) (papply proc args))
@@ -123,7 +153,9 @@
     (/ . ,(lambda args (apply / args)))
     (= . ,(lambda args (if (apply = args) 't '())))
     (> . ,(lambda args (if (apply > args) 't '())))
-    (< . ,(lambda args (if (apply < args) 't '())))))
+    (< . ,(lambda args (if (apply < args) 't '())))
+    (>= . ,(lambda args (if (apply > args) 't '())))
+    (<= . ,(lambda args (if (apply < args) 't '())))))
 
 (define (primitive? proc) (procedure? proc))
 (define (papply proc args) (apply proc args))
@@ -137,7 +169,8 @@
   (unless (eof-object? exp)
     ((lambda (x)
        (unless (eq? x (void))
-         (print x)))
+         (write x)
+         (newline)))
      (crow-eval exp toplevel #t))
     (crow-repl)))
 
