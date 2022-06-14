@@ -183,6 +183,9 @@
   (str-ref . ,string-ref)
   (str-set! . ,string-set!)
   (str->list . ,string->list)
+
+  ;; misc
+  (exit . ,exit)
 )) ; primitives
 
 (define (primitive? proc) (procedure? proc))
