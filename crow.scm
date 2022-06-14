@@ -23,12 +23,6 @@
 (define true? (compose not null?))
 (define false? null?)
 
-(define (alist-copy lst)
-  (if (null? lst)
-      '()
-      (cons (cons (caar lst) (cdar lst))
-            (alist-copy (cdr lst)))))
-
 (define (list-cars lst) (map car lst))
 (define (list-cadrs lst) (map cadr lst))
 
@@ -49,11 +43,6 @@
 (define (bind keys dats env)
   (cons (zip keys dats) env))
 
-(define (env-copy env)
-  (if (null? env)
-      '()
-      (cons (alist-copy (car env)) (env-copy (cdr env)))))
-
 (define (env-insert! env par)
   (set-car! env (cons par (car env))))
 
@@ -67,7 +56,7 @@
 ;; Where args and body are the arguments and body of the lambda expression used
 ;; to create the closure, and env is the environment of that lambda expression.
 
-(define (closure exp env) (list 'closure (cdr exp) (env-copy env)))
+(define (closure exp env) (list 'closure (cdr exp) env))
 (define (closure? exp) (eq? (car exp) 'closure))
 
 (define closure-args caadr)
