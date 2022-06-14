@@ -13,7 +13,7 @@
 ;;   ./crow [FILE...]
 ;;
 ;; NOTE: Filenames can only be passed as arguments when the program is compiled,
-;; otherwise arguments to the CHICKEN interpreter will be included in args.
+;; otherwise arguments to the CHICKEN interpreter will be included.
 
 (import chicken.format
         chicken.process-context)
