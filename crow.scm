@@ -142,7 +142,7 @@
 (define (crow-eval exp env #!optional toplvl)
   (cond ((or (number? exp) (char? exp) (string? exp)) exp)
         ((symbol? exp) (lookup exp env))
-        ((evspec exp env toplvl)) ; returns false when exp is not a special form
+        ((evspec exp env toplvl))
         (else (crow-apply (crow-eval (car exp) env)
                           (evlist (cdr exp) env)))))
 
