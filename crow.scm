@@ -123,6 +123,14 @@
             (set-cdr! par (crow-eval (cadr exp) env))
             (evset! exp (cdr env))))))
 
+(define (evbody exp env toplvl)
+  (if (null? exp)
+      '()
+      (let ((val (crow-eval (car exp) env toplvl)))
+        (if (null? (cdr exp))
+            val
+            (evbody (cdr exp) env toplvl)))))
+
 (define (evspec exp env toplvl)
   (case (car exp)
     ((quote) (cadr exp))
@@ -137,6 +145,7 @@
          (env-insert! env (evdef (cdr exp) env))
          (error 'crow-eval "definition outside toplevel")))
     ((set!) (evset! (cdr exp) env))
+    ((body) (evbody (cdr exp) env toplvl))
     (else #f)))
 
 (define (crow-eval exp env #!optional toplvl)
