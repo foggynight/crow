@@ -60,7 +60,7 @@
 (define (closure? exp) (eq? (car exp) 'closure))
 
 (define closure-args caadr)
-(define closure-body cadadr)
+(define (closure-body exp) (cons 'body (cdadr exp)))
 (define closure-env caddr)
 
 ;; evaluator -------------------------------------------------------------------
