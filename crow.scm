@@ -31,14 +31,15 @@
 
 ;; environment -----------------------------------------------------------------
 
-(define (lookup sym env)
+(define (fetch sym env)
   (if (null? env)
-      (error 'lookup "unbound symbol" sym)
+      (error 'fetch "unbound symbol" sym)
       ((lambda (cell)
-         (if cell
-             (cdr cell)
-             (lookup sym (cdr env))))
+         (if cell cell (fetch sym (cdr env))))
        (assq sym (car env)))))
+
+(define (lookup sym env)
+  (cdr (fetch sym env)))
 
 (define (bind keys dats env)
   (cons (zip keys dats) env))
@@ -119,12 +120,8 @@
                                env)))))
 
 (define (evset! exp env)
-  (if (null? env)
-      (error 'evset! "unbound symbol" (car exp))
-      (let ((par (assq (car exp) (car env))))
-        (if par
-            (set-cdr! par (crow-eval (cadr exp) env))
-            (evset! exp (cdr env))))))
+  (define par (fetch (car exp) env))
+  (set-cdr! par (crow-eval (cadr exp) env)))
 
 (define (evbody exp env toplvl)
   (if (null? exp)
