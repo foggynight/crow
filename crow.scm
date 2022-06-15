@@ -238,24 +238,26 @@
 
 (define toplevel (list '() primitives)) ; toplevel environment
 
-(define (crow-repl)
-  (define exp (read))
-  (unless (eof-object? exp)
-    ((lambda (x)
-       (unless (eq? x (void))
-         (write x)
-         (newline)))
-     (crow-eval exp toplevel #t))
-    (crow-repl)))
+(define (display-prompt)
+  (display "> "))
+
+(define (crow-repl #!optional prompt)
+  (when prompt (display-prompt))
+  (let ((exp (read)))
+    (if (eof-object? exp)
+        (when prompt (newline) (exit))
+        (begin ((lambda (x)
+                  (unless (eq? x (void))
+                    (write x)
+                    (newline)))
+                (crow-eval exp toplevel #t))
+               (crow-repl prompt)))))
 
 (let ((args (command-line-arguments)))
-  (cond ((or (null? args)
-             (string=? (car args) "-q"))
-         (crow-repl))
-        (else (for-each (lambda (arg)
-                          (with-input-from-file arg
-                            crow-repl))
-                        args)
-              (crow-repl))))
-
-(exit)
+  (unless (or (null? args)
+              (string=? (car args) "-q"))
+    (for-each (lambda (arg)
+                (with-input-from-file arg
+                  crow-repl))
+              args)))
+(crow-repl #t)
