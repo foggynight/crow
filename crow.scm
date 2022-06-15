@@ -115,6 +115,14 @@
                     (crow-eval (cons 'lambda (cons (cdar def) (cdr def)))
                                env)))))
 
+(define (evset! exp env)
+  (if (null? env)
+      (error 'evset! "unbound symbol" (car exp))
+      (let ((par (assq (car exp) (car env))))
+        (if par
+            (set-cdr! par (crow-eval (cadr exp) env))
+            (evset! exp (cdr env))))))
+
 (define (evspec exp env toplvl)
   (case (car exp)
     ((quote) (cadr exp))
@@ -128,6 +136,7 @@
      (if toplvl
          (env-insert! env (evdef (cdr exp) env))
          (error 'crow-eval "definition outside toplevel")))
+    ((set!) (evset! (cdr exp) env))
     (else #f)))
 
 (define (crow-eval exp env #!optional toplvl)
