@@ -167,25 +167,9 @@
   ;; symbol
   (sym? . ,(compose bool->atom symbol?))
   (sym->str . ,symbol->string)
-  (str->sym . ,string->symbol)
-
-  ;; atom
-  (atom? . ,(compose bool->atom atom?))
-
-  ;; cons
-  (cons . ,cons)
-  (cons? . ,(compose bool->atom pair?))
-  (car . ,car)
-  (cdr . ,cdr)
-
-  ;; list
-  (list . ,list)
-  (null? . ,(compose bool->atom null?))
-  (list? . ,(compose bool->atom list?))
-  (length . ,length)
-  (list-ref . ,list-ref)
 
   ;; number
+  (num? . ,(compose bool->atom number?))
   (+ . ,+)
   (- . ,-)
   (* . ,*)
@@ -203,13 +187,45 @@
   (trunc . ,(compose truncate inexact->exact))
   (float . ,exact->inexact)
 
+  ;; atom
+  (atom? . ,(compose bool->atom atom?))
+
+  ;; cons
+  (cons . ,cons)
+  (cons? . ,(compose bool->atom pair?))
+  (car . ,car)
+  (cdr . ,cdr)
+
+  ;; list
+  (list . ,list)
+  (null? . ,(compose bool->atom null?))
+  (list? . ,(compose bool->atom list?))
+  (length . ,length)
+  (list-ref . ,list-ref)
+  (list->vec . ,list->vector)
+
+  ;; vector
+  (vec . ,vector)
+  (make-vec . ,(lambda (size . fill)
+                 (make-vector size (if (null? fill) '() (car fill)))))
+  (vec? . ,(compose bool->atom vector?))
+  (vec-len . ,vector-length)
+  (vec-ref . ,vector-ref)
+  (vec-set! . ,vector-set!)
+  (vec->list . ,vector->list)
+
   ;; string
   (str . ,string)
-  (str? . ,string?)
+  (str? . ,(compose bool->atom string?))
   (str-len . ,string-length)
   (str-ref . ,string-ref)
   (str-set! . ,string-set!)
+  (str->sym . ,string->symbol)
   (str->list . ,string->list)
+  (str->num . ,(lambda args
+                 ((lambda (x)
+                    (if x x (bool->atom x)))
+                  (apply string->number args))))
 
   ;; misc
   (exit . ,exit)
