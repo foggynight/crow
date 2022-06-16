@@ -280,6 +280,7 @@
   ;; misc
   (args . ,command-line-arguments)
   (exit . ,exit)
+  (error . ,error)
   (void . ,void)
 )) ; primitives
 
