@@ -106,7 +106,7 @@
 
 (define (evlet exp env)
   (define binds (car exp))
-  (define body (cadr exp))
+  (define body (cons 'body (cdr exp)))
   (crow-eval body
              (bind (list-cars binds)
                    (evlist (list-cadrs binds) env)
