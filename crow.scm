@@ -236,6 +236,11 @@
                     (if x x (bool->atom x)))
                   (apply string->number args))))
 
+  ;; io
+  (display . ,display)
+  (print . ,print)
+  (write . ,write)
+
   ;; misc
   (exit . ,exit)
 )) ; primitives
