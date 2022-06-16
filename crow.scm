@@ -74,9 +74,9 @@
 
 (define (evcond clauses env)
   (cond ((null? clauses) '())
-        ((eq? (caar clauses) 'else) (crow-eval (cadar clauses) env))
+        ((eq? (caar clauses) 'else) (crow-eval (cons 'body (cdar clauses)) env))
         ((false? (crow-eval (caar clauses) env)) (evcond (cdr clauses) env))
-        (else (crow-eval (cadar clauses) env))))
+        (else (crow-eval (cons 'body (cdar clauses)) env))))
 
 (define (evif exp env)
   (define pred (car exp))
