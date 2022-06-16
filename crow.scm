@@ -291,10 +291,10 @@
 (define (display-prompt)
   (display "> "))
 
-(define (crow-repl #!optional prompt)
+(define (crow-repl ip #!optional prompt)
   (when prompt (display-prompt))
-  (let ((exp (read)))
-    (read-char) ; flush newline
+  (let ((exp (read ip)))
+    (read-char ip) ; flush newline
     (if (eof-object? exp)
         (when prompt (newline) (exit))
         (begin ((lambda (x)
@@ -302,9 +302,9 @@
                     (write x)
                     (newline)))
                 (crow-eval exp toplevel #t))
-               (crow-repl prompt)))))
+               (crow-repl ip prompt)))))
 
 (let ((args (command-line-arguments)))
   (unless (or (null? args) (string=? (car args) "-q"))
-    (with-input-from-file (car args) crow-repl)))
-(crow-repl #t)
+    (call-with-input-file (car args) crow-repl)))
+(crow-repl (current-input-port) #t)
