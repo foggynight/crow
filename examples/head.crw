@@ -24,8 +24,7 @@
     (close-in-port p)))
 
 (def (main n files)
-  (if (null? files)
-      (void)
+  (if files
       (body (head n (car files))
             (main n (cdr files)))))
 
@@ -34,7 +33,6 @@
   (let ((n (str->num (car (cdr (args))))))
     (if (not n) (error 'head "invalid COUNT argument"))
     (if (> argc 2)
-        (main n (cdr (cdr files)))
-        (body (rw-lines n (curr-in-port))
-              (void)))))
+        (main n (cdr (cdr (args))))
+        (rw-lines n (curr-in-port)))))
 (exit)
