@@ -177,12 +177,12 @@
   (eval . ,crow-eval)
   (apply . ,crow-apply)
 
+  ;; logic
+  (not . ,(lambda (x) (if (null? x) 't '())))
+
   ;; symbol
   (sym? . ,(compose bool->atom symbol?))
   (sym->str . ,symbol->string)
-
-  ;; logic
-  (not . ,(lambda (x) (if (null? x) 't '())))
 
   ;; number
   (num? . ,(compose bool->atom number?))
