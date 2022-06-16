@@ -298,9 +298,8 @@
     (if (eof-object? exp)
         (when prompt (newline) (exit))
         (begin ((lambda (x)
-                  (unless (eq? x (void))
-                    (write x)
-                    (newline)))
+                  (when (and prompt (not (eq? x (void))))
+                    (write x) (newline)))
                 (crow-eval exp toplevel #t))
                (crow-repl ip prompt)))))
 
