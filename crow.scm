@@ -186,7 +186,7 @@
   (// . ,(lambda args ((compose floor inexact->exact)
                        (apply / args))))
   (= . ,(lambda args (bool->atom (apply = args))))
-  (<> . ,(lambda args (bool->atom (not (apply <> args)))))
+  (<> . ,(lambda args (bool->atom (not (apply = args)))))
   (> . ,(lambda args (bool->atom (apply > args))))
   (< . ,(lambda args (bool->atom (apply < args))))
   (>= . ,(lambda args (bool->atom (apply >= args))))
