@@ -1,18 +1,37 @@
+#!/usr/bin/env crow
+
 ;; head.crw - output the first lines of files
+;; USAGE: ./head.crw COUNT FILE...
 
 (def (&read-line c p)
-  (if (not (or (eof? c) (char=? c #\newline)))
-      (cons c (&read-line (read-char p) p))))
+  (cond ((eof? c) c)
+        ((char=? c #\newline) '())
+        (else (cons c (&read-line (read-char p) p)))))
 (def (read-line p)
-  (list->str (&read-line (read-char p) p)))
+  (let ((l (&read-line (read-char p) p)))
+    (if (eof? l) l (list->str l))))
 
 (def (rw-lines n p)
   (if (> n 0)
-      (body (print (read-line p))
-            (rw-lines (- n 1) p))))
+      (let ((l (read-line p)))
+        (if (not (eof? l))
+            (body (print l)
+                  (rw-lines (- n 1) p))))))
 
-(def (head name n)
+(def (head n name)
   (let ((p (open-in-file name)))
     (rw-lines n p)
-    (close-in-port p))
-  (void))
+    (close-in-port p)))
+
+(def (main n files)
+  (if (null? files)
+      (void)
+      (body (head n (car files))
+            (main n (cdr files)))))
+
+(if (< (length (args)) 3)
+    (error 'head "invalid arguments")
+    (let ((n (str->num (car (cdr (args)))))
+          (files (cdr (cdr (args)))))
+      (main n files)))
+(exit)
