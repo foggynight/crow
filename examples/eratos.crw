@@ -1,31 +1,23 @@
 ;; eratos.crw - Sieve of Eratosthenes
 
-(def v '())
+(def (init n) (make-vec (- n 1) 't))
 
-(def (init n)
-  (make-vec (- n 1) 't))
+(def (&loop! v n step lim)
+  (if (<= n lim)
+      (body (vec-set! v (- n 2) '())
+            (&loop! v (+ n step) step lim))))
+(def (loop! v n lim) (&loop! v (+ n n) n lim))
 
-(def (vref i)
-  (vec-ref v (- i 2)))
-
-(def (vset! i e)
-  (vec-set! v (- i 2) e))
-
-(def (&loop n step lim)
-  (if (> n lim)
-      '()
-      (let ((hack (vset! n '())))
-        (&loop (+ n step) step lim))))
-(def (loop n lim) (&loop (+ n n) n lim))
-
-(def (&calc n lim)
-  (cond ((> n lim) '())
-        ((vref n) (let ((hack (loop n lim)))
-                    (&calc (+ n 1) lim)))
-        (else (&calc (+ n 1) lim))))
-(def (calc n) (&calc 2 n))
+(def (&calc! v i lim)
+  (cond ((> i lim) '())
+        ((vec-ref v (- i 2))
+         (loop! v i lim)
+         (&calc! v (+ i 1) lim))
+        (else (&calc! v (+ i 1) lim))))
+(def (calc! v n) (&calc! v 2 n))
 
 (def (prime? n)
-  (if (< n 2)
-      '()
-      (vec-ref v (- n 2))))
+  (if (> n 1)
+      (let ((v (init n)))
+        (calc! v n)
+        (vec-ref v (- n 2)))))
