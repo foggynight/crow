@@ -236,10 +236,33 @@
                     (if x x (bool->atom x)))
                   (apply string->number args))))
 
-  ;; io
+  ;; ports
+  (in-port? . ,(compose bool->atom input-port?))
+  (out-port? . ,(compose bool->atom output-port?))
+  (curr-in-port . ,current-input-port)
+  (curr-out-port . ,current-output-port)
+  (open-in-file . ,open-input-file)
+  (open-out-file . ,open-output-file)
+  (close-in-port . ,close-input-port)
+  (close-out-port . ,close-output-port)
+  (with-in-file . ,with-input-from-file)
+  (with-out-file . ,with-output-to-file)
+  (call-in-file . , ,call-with-input-file)
+  (call-out-file . , ,call-with-output-file)
+
+  ;; input
+  (eof? . ,(compose bool->atom eof-object?))
+  (ready? ,(compose bool->atom char-ready?))
+  (read . ,read)
+  (read-char . ,read-char)
+  (peek-char . ,peek-char)
+
+  ;; output
+  (write . ,write)
   (display . ,display)
   (print . ,print)
-  (write . ,write)
+  (newline . ,newline)
+  (write-char . ,write-char)
 
   ;; misc
   (exit . ,exit)
