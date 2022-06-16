@@ -177,6 +177,9 @@
   (sym? . ,(compose bool->atom symbol?))
   (sym->str . ,symbol->string)
 
+  ;; logic
+  (not . ,(lambda (x) (if (null? x) 't '())))
+
   ;; number
   (num? . ,(compose bool->atom number?))
   (+ . ,+)
@@ -212,6 +215,7 @@
   (length . ,length)
   (list-ref . ,list-ref)
   (list->vec . ,list->vector)
+  (list->str . ,list->string)
 
   ;; vector
   (vec . ,vector)
