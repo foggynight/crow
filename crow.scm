@@ -291,6 +291,7 @@
 (define (crow-repl #!optional prompt)
   (when prompt (display-prompt))
   (let ((exp (read)))
+    (read-char) ; flush newline
     (if (eof-object? exp)
         (when prompt (newline) (exit))
         (begin ((lambda (x)
