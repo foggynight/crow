@@ -1,7 +1,7 @@
 #!/usr/bin/env crow
 
 ;; head.crw - output the first lines of files
-;; USAGE: ./head.crw COUNT FILE...
+;; USAGE: ./head.crw COUNT [FILE...]
 
 (def (&read-line c p)
   (cond ((eof? c) c)
@@ -29,9 +29,12 @@
       (body (head n (car files))
             (main n (cdr files)))))
 
-(if (< (length (args)) 3)
-    (error 'head "invalid arguments")
-    (let ((n (str->num (car (cdr (args)))))
-          (files (cdr (cdr (args)))))
-      (main n files)))
+(let ((argc (length (args))))
+  (if (< argc 2) (error 'head "missing arguments"))
+  (let ((n (str->num (car (cdr (args))))))
+    (if (not n) (error 'head "invalid COUNT argument"))
+    (if (> argc 2)
+        (main n (cdr (cdr files)))
+        (body (rw-lines n (curr-in-port))
+              (void)))))
 (exit)
