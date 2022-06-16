@@ -1,0 +1,18 @@
+;; head.crw - output the first lines of files
+
+(def (&read-line c p)
+  (if (not (or (eof? c) (char=? c #\newline)))
+      (cons c (&read-line (read-char p) p))))
+(def (read-line p)
+  (list->str (&read-line (read-char p) p)))
+
+(def (rw-lines n p)
+  (if (> n 0)
+      (body (print (read-line p))
+            (rw-lines (- n 1) p))))
+
+(def (head name n)
+  (let ((p (open-in-file name)))
+    (rw-lines n p)
+    (close-in-port p))
+  (void))
