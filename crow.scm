@@ -223,6 +223,16 @@
   (vec-set! . ,vector-set!)
   (vec->list . ,vector->list)
 
+  ;; character
+  (char? . ,(compose bool->atom char?))
+  (char=? . ,(compose bool->atom char=?))
+  (char<? . ,(compose bool->atom char<?))
+  (char>? . ,(compose bool->atom char>?))
+  (char<=? . ,(compose bool->atom char<=?))
+  (char>=? . ,(compose bool->atom char>=?))
+  (char->int . ,char->integer)
+  (int->char . ,integer->char)
+
   ;; string
   (str . ,string)
   (str? . ,(compose bool->atom string?))
