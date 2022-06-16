@@ -278,6 +278,7 @@
   (write-char . ,write-char)
 
   ;; misc
+  (args . ,command-line-arguments)
   (exit . ,exit)
   (void . ,void)
 )) ; primitives
