@@ -15,7 +15,8 @@
 ;; NOTE: Filenames can only be passed as arguments when the program is compiled,
 ;; otherwise arguments to the CHICKEN interpreter will be included.
 
-(import chicken.process-context)
+(import chicken.format
+        chicken.process-context)
 
 ;; misc ------------------------------------------------------------------------
 
@@ -288,22 +289,32 @@
 
 (define toplevel (list '() primitives)) ; toplevel environment
 
-(define (display-prompt)
-  (display "> "))
+(define (display-banner)
+  (printf "CROW v0.0.0~%~
+           (C) 2022 Robert Coffey~%"))
+
+(define display-prompt
+  (let ((first #t))
+    (lambda ()
+      (if first
+          (set! first #f)
+          (newline))
+      (display "> "))))
 
 (define (crow-repl ip #!optional prompt)
   (when prompt (display-prompt))
   (let ((exp (read ip)))
-    (read-char ip) ; flush newline
     (if (eof-object? exp)
         (when prompt (newline) (exit))
         (begin ((lambda (x)
                   (when (and prompt (not (eq? x (void))))
-                    (write x) (newline)))
+                    (write x)))
                 (crow-eval exp toplevel #t))
                (crow-repl ip prompt)))))
 
 (let ((args (command-line-arguments)))
   (unless (or (null? args) (string=? (car args) "-q"))
     (call-with-input-file (car args) crow-repl)))
+
+(display-banner)
 (crow-repl (current-input-port) #t)
