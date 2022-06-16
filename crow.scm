@@ -247,8 +247,8 @@
   (close-out-port . ,close-output-port)
   (with-in-file . ,with-input-from-file)
   (with-out-file . ,with-output-to-file)
-  (call-in-file . , ,call-with-input-file)
-  (call-out-file . , ,call-with-output-file)
+  (call-in-file . ,call-with-input-file)
+  (call-out-file . ,call-with-output-file)
 
   ;; input
   (eof? . ,(compose bool->atom eof-object?))
