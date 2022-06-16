@@ -305,10 +305,6 @@
                (crow-repl prompt)))))
 
 (let ((args (command-line-arguments)))
-  (unless (or (null? args)
-              (string=? (car args) "-q"))
-    (for-each (lambda (arg)
-                (with-input-from-file arg
-                  crow-repl))
-              args)))
+  (unless (or (null? args) (string=? (car args) "-q"))
+    (with-input-from-file (car args) crow-repl)))
 (crow-repl #t)
