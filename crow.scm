@@ -165,6 +165,9 @@
 
 ;; primitive -------------------------------------------------------------------
 
+(define (primitive? proc) (procedure? proc))
+(define (papply proc args) (apply proc args))
+
 (define primitives `(
   ;; environment
   (toplevel . ,(lambda () toplevel))
@@ -281,9 +284,6 @@
   ;; misc
   (exit . ,exit)
 )) ; primitives
-
-(define (primitive? proc) (procedure? proc))
-(define (papply proc args) (apply proc args))
 
 ;; repl ------------------------------------------------------------------------
 
