@@ -1,3 +1,4 @@
 DONE improve error handling
 TODO add nested definitions
 TODO add symbolic macros
+TODO add arguments (quiet)
