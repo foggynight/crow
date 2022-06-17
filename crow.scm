@@ -321,14 +321,20 @@
 
 (define toplevel (list '() (primitives))) ; toplevel environment
 
-(define (main)
+(define (main-load)
   (let ((args (command-line-arguments)))
     (unless (or (null? args) (string=? (car args) "-q"))
-      (crow-load (car args))))
+      (crow-load (car args)))))
+
+(define (main-repl)
   (crow-repl (current-input-port) #t))
 
 (display-banner)
-(letrec ((h (lambda (exn)
-              (print (message exn))
-              (with-exn-handler h main))))
-  (with-exn-handler h main))
+(letrec ((h-load (lambda (exn)
+                   (print (message exn))
+                   (exit)))
+         (h-repl (lambda (exn)
+                   (print (message exn))
+                   (with-exn-handler h-repl main-repl))))
+  (with-exn-handler h-load main-load)
+  (with-exn-handler h-repl main-repl))
