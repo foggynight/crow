@@ -321,13 +321,12 @@
 
 (define toplevel (list '() (primitives))) ; toplevel environment
 
-(define (main-load)
-  (let ((args (command-line-arguments)))
-    (unless (or (null? args) (string=? (car args) "-q"))
-      (crow-load (car args)))))
+(define (main-load #!optional (args (command-line-arguments)))
+  (unless (or (null? args) (string=? (car args) "-q"))
+    (crow-load (car args)))
+  void) ; Must return a procedure to avoid error in WITH-EXN-HANDLER.
 
-(define (main-repl)
-  (crow-repl (current-input-port) #t))
+(define (main-repl) (crow-repl (current-input-port) #t))
 
 (display-banner)
 (letrec ((h-load (lambda (exn)
