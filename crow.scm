@@ -166,6 +166,11 @@
                                           (closure-env proc))))
         (else (error 'crow-apply "not a primitive or closure" exp))))
 
+;; Note: This must be defined prior to PRIMITIVES. Need a better way to define
+;; the list of primitives which avoids this.
+(define (crow-load name)
+  (call-with-input-file name crow-repl))
+
 ;; primitive -------------------------------------------------------------------
 
 (define (primitive? proc) (procedure? proc))
@@ -282,6 +287,7 @@
 
   ;; misc
   (args . ,command-line-arguments)
+  (load . ,crow-load)
   (exit . ,exit)
   (error . ,error)
   (void . ,void)
@@ -308,7 +314,7 @@
 
 (let ((args (command-line-arguments)))
   (unless (or (null? args) (string=? (car args) "-q"))
-    (call-with-input-file (car args) crow-repl)))
+    (crow-load (car args))))
 
 (display-banner)
 (crow-repl (current-input-port) #t)
