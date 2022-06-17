@@ -287,7 +287,7 @@
 
   ;; misc
   (args . ,command-line-arguments)
-  (load . ,crow-load)
+  (load . ,(lambda (name) (crow-load name) '()))
   (exit . ,exit)
   (error . ,error)
   (void . ,void)
