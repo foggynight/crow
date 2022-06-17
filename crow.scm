@@ -166,17 +166,12 @@
                                           (closure-env proc))))
         (else (error 'crow-apply "not a primitive or closure" exp))))
 
-;; Note: This must be defined prior to PRIMITIVES. Need a better way to define
-;; the list of primitives which avoids this.
-(define (crow-load name)
-  (call-with-input-file name crow-repl))
-
 ;; primitive -------------------------------------------------------------------
 
 (define (primitive? proc) (procedure? proc))
 (define (papply proc args) (apply proc args))
 
-(define primitives `(
+(define (primitives) `(
   ;; environment
   (toplevel . ,(lambda () toplevel))
 
@@ -295,8 +290,6 @@
 
 ;; repl ------------------------------------------------------------------------
 
-(define toplevel (list '() primitives)) ; toplevel environment
-
 (define (display-banner)
   (printf "CROW v0.0.0~%~
            (C) 2022 Robert Coffey~%"))
@@ -311,6 +304,13 @@
                   (when prompt (write x) (newline)))
                 (crow-eval exp toplevel #t))
                (crow-repl ip prompt)))))
+
+(define (crow-load name)
+  (call-with-input-file name crow-repl))
+
+;; main ------------------------------------------------------------------------
+
+(define toplevel (list '() (primitives))) ; toplevel environment
 
 (let ((args (command-line-arguments)))
   (unless (or (null? args) (string=? (car args) "-q"))
