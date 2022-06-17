@@ -312,9 +312,8 @@
 
 (define toplevel (list '() (primitives))) ; toplevel environment
 
+(display-banner)
 (let ((args (command-line-arguments)))
   (unless (or (null? args) (string=? (car args) "-q"))
     (crow-load (car args))))
-
-(display-banner)
 (crow-repl (current-input-port) #t)
