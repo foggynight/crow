@@ -53,16 +53,18 @@
 ;; Closures represent procedures with zero or more free variables bound within
 ;; an environment, they are represented by lists of the form:
 ;;
-;;   ('closure ((args) ('body ...)) env)
+;;   ('closure ((args*) ('body exp*)) env)
 ;;
-;; Where args and body are the arguments and body of the lambda expression used
-;; to create the closure, and env is the environment of that lambda expression.
+;; Where args, body, and env are from the lambda expression used to create the
+;; closure.
 
+;; Create a closure from EXP bound in ENV. EXP should be an expression of the
+;; form: ((args*) sexp*).
 (define (closure exp env)
-  `(closure (,(car exp) ,(cons 'body (cdr exp))) ,env))
+  `(closure (,(car exp) (body . ,(cdr exp))) ,env))
 
 (define (closure? exp)
-  (eq? (car exp) 'closure))
+  (and (pair? exp) (eq? (car exp) 'closure)))
 
 (define closure-args caadr)
 (define closure-body cadadr)
