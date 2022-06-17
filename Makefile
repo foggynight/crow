@@ -1,9 +1,6 @@
 PRG := crow
-
 WRN := -Wall -Wextra -Wpedantic
 SRC := src/*.c
-MCE := crow.scm
-
 INSTALL := /usr/local/bin
 
 .PHONY: all
@@ -13,10 +10,6 @@ all:
 .PHONY: debug
 debug:
 	gcc -o $(PRG) -g $(WRN) $(SRC)
-
-.PHONY: mce
-mce:
-	csc -o $(PRG) -O5 -d0 $(MCE)
 
 .PHONY: install
 install:
