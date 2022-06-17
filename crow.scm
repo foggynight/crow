@@ -145,7 +145,7 @@
     ((let) (evlet (cdr exp) env))
     ((def define)
      (if toplvl
-         (env-insert! env (evdef (cdr exp) env))
+         (begin (env-insert! env (evdef (cdr exp) env)) '())
          (error 'crow-eval "definition outside toplevel")))
     ((set!) (evset! (cdr exp) env))
     ((body) (evbody (cdr exp) env toplvl))
@@ -294,14 +294,7 @@
 (define (display-banner)
   (printf "CROW v0.0.0~%~
            (C) 2022 Robert Coffey~%"))
-
-(define display-prompt
-  (let ((first #t))
-    (lambda ()
-      (if first
-          (set! first #f)
-          (newline))
-      (display "> "))))
+(define (display-prompt) (display "> "))
 
 (define (crow-repl ip #!optional prompt)
   (when prompt (display-prompt))
@@ -309,8 +302,7 @@
     (if (eof-object? exp)
         (when prompt (newline) (exit))
         (begin ((lambda (x)
-                  (when (and prompt (not (eq? x (void))))
-                    (write x)))
+                  (when prompt (write x) (newline)))
                 (crow-eval exp toplevel #t))
                (crow-repl ip prompt)))))
 
