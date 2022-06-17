@@ -16,7 +16,8 @@
 ;; otherwise arguments to the CHICKEN interpreter will be included.
 
 (import chicken.format
-        chicken.process-context)
+        chicken.process-context
+        simple-exceptions)
 
 ;; misc ------------------------------------------------------------------------
 
@@ -30,11 +31,18 @@
 (define (zip keys dats)
   (map (lambda (x y) (cons x y)) keys dats))
 
+;; error -----------------------------------------------------------------------
+
+(define (crow-error . args)
+  (define fmt (apply string-append (cons "error"
+                                         (map (lambda (a) ": ~A") args))))
+  (error (apply sprintf (cons fmt args))))
+
 ;; environment -----------------------------------------------------------------
 
 (define (fetch sym env)
   (if (null? env)
-      (error 'fetch "unbound symbol" sym)
+      (crow-error 'fetch "unbound symbol" sym)
       ((lambda (cell)
          (if cell cell (fetch sym (cdr env))))
        (assq sym (car env)))))
@@ -116,7 +124,7 @@
                    env)))
 
 (define (evdef def env)
-  (cond ((null? def) (error 'evdef "invalid definition"))
+  (cond ((null? def) (crow-error 'evdef "invalid definition"))
         ((symbol? (car def)) (cons (car def) (crow-eval (cadr def) env)))
         (else (cons (caar def)
                     (crow-eval (cons 'lambda (cons (cdar def) (cdr def)))
@@ -146,7 +154,7 @@
     ((def define)
      (if toplvl
          (begin (env-insert! env (evdef (cdr exp) env)) '())
-         (error 'crow-eval "definition outside toplevel")))
+         (crow-error 'evspec "definition outside toplevel")))
     ((set!) (evset! (cdr exp) env))
     ((body) (evbody (cdr exp) env toplvl))
     (else #f)))
@@ -154,9 +162,10 @@
 (define (crow-eval exp env #!optional toplvl)
   (cond ((or (number? exp) (char? exp) (string? exp)) exp)
         ((symbol? exp) (lookup exp env))
-        ((evspec exp env toplvl))
-        (else (crow-apply (crow-eval (car exp) env)
-                          (evlist (cdr exp) env)))))
+        ((list? exp) (let ((val (evspec exp env toplvl)))
+                       (if val val (crow-apply (crow-eval (car exp) env)
+                                               (evlist (cdr exp) env)))))
+        (else (crow-error 'crow-eval "invalid expression" exp))))
 
 (define (crow-apply proc args)
   (cond ((primitive? proc) (papply proc args))
@@ -164,7 +173,7 @@
                                     (bind (closure-args proc)
                                           args
                                           (closure-env proc))))
-        (else (error 'crow-apply "not a primitive or closure" exp))))
+        (else (crow-error 'crow-apply "invalid procedure" proc))))
 
 ;; primitive -------------------------------------------------------------------
 
@@ -284,7 +293,7 @@
   (args . ,command-line-arguments)
   (load . ,(lambda (name) (crow-load name) '()))
   (exit . ,exit)
-  (error . ,error)
+  (error . ,crow-error)
   (void . ,void)
 )) ; primitives
 
@@ -312,8 +321,14 @@
 
 (define toplevel (list '() (primitives))) ; toplevel environment
 
+(define (main)
+  (let ((args (command-line-arguments)))
+    (unless (or (null? args) (string=? (car args) "-q"))
+      (crow-load (car args))))
+  (crow-repl (current-input-port) #t))
+
 (display-banner)
-(let ((args (command-line-arguments)))
-  (unless (or (null? args) (string=? (car args) "-q"))
-    (crow-load (car args))))
-(crow-repl (current-input-port) #t)
+(letrec ((h (lambda (exn)
+              (print (message exn))
+              (with-exn-handler h main))))
+  (with-exn-handler h main))
