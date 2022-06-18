@@ -1,5 +1,5 @@
 DONE improve error handling
-TODO add error checking to special forms
+DONE add error checking to special forms
 TODO add lambda argument syntaxes
 TODO add nested definitions
 TODO add symbolic macros

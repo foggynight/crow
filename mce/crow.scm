@@ -80,49 +80,71 @@
 
 ;; evaluator -------------------------------------------------------------------
 
+;; lst -> (sexp*)
 (define (evlist lst env)
   (map (lambda (x) (crow-eval x env)) lst))
 
+;; TODO: Add EVLAMBDA.
+
+;; clauses -> (clause*)
+;; clause  -> (pred sexp*)
 (define (evcond clauses env)
-  (cond ((null? clauses) '())
-        ((eq? (caar clauses) 'else) (crow-eval (cons 'body (cdar clauses)) env))
-        ((false? (crow-eval (caar clauses) env)) (evcond (cdr clauses) env))
-        (else (crow-eval (cons 'body (cdar clauses)) env))))
+  (if (null? clauses) '()
+      (let ((c (car clauses)))
+        (cond ((not (list? c)) (crow-error 'evcond "invalid clause" c))
+              ((eq? (car c) 'else) (crow-eval (cons 'body (cdr c)) env))
+              ((false? (crow-eval (car c) env)) (evcond (cdr clauses) env))
+              (else (crow-eval (cons 'body (cdr c)) env))))))
 
+;; exp    -> (pred bt bf?)
+;; bt, bf -> sexp
 (define (evif exp env)
-  (define pred (car exp))
-  (define body-true (cadr exp))
-  (define body-false (if (null? (cddr exp)) '() (caddr exp)))
-  (if (true? (crow-eval pred env))
-      (crow-eval body-true env)
-      (if (false? body-false)
-          '()
-          (crow-eval body-false env))))
+  (unless (< 1 (length exp) 4)
+    (crow-error 'evif "invalid form" (cons 'if exp)))
+  (let ((bt (cadr exp))
+        (bf (if (null? (cddr exp)) '() (caddr exp))))
+    (if (true? (crow-eval (car exp) env))
+        (crow-eval bt env)
+        (if (false? bf) '() (crow-eval bf env)))))
 
+;; exp -> (sexp*)
 (define (evand exp last env)
-  (if (null? exp)
-      last
+  (if (null? exp) last
       (let ((val (crow-eval (car exp) env)))
-        (if (false? val)
-            '()
+        (if (false? val) '()
             (evand (cdr exp) val env)))))
 
+;; exp -> (sexp*)
 (define (evor exp last env)
-  (if (null? exp)
-      last
+  (if (null? exp) last
       (let ((val (crow-eval (car exp) env)))
-        (if (true? val)
-            val
+        (if (true? val) val
             (evor (cdr exp) val env)))))
 
+;; exp   -> (binds sexp*)
+;; binds -> (bind*)
+;; bind  -> (symbol sexp)
 (define (evlet exp env)
-  (define binds (car exp))
-  (define body (cons 'body (cdr exp)))
-  (crow-eval body
-             (bind (list-cars binds)
-                   (evlist (list-cadrs binds) env)
-                   env)))
+  (define (validate-binds binds)
+    (define (valid? b) (and (list? b) (null? (cddr b)) (symbol? (car b))))
+    (cond ((null? binds) #t)
+          ((not (valid? (car binds)))
+           (crow-error 'evlet "invalid bind" (car binds)))
+          (else (validate-binds (cdr binds)))))
+  (when (null? exp) (crow-error 'evlet "invalid form" (cons 'let exp)))
+  (let ((binds (car exp))
+        (body (cons 'body (cdr exp))))
+    (cond ((not (list? binds)) (crow-error 'evlet "invalid binds" binds))
+          ((validate-binds binds)
+           (crow-eval body (bind (list-cars binds)
+                                 (evlist (list-cadrs binds) env)
+                                 env))))))
 
+;; TODO: Implement this grammar.
+;; def -> (symbol)
+;;      | (symbol sexp)
+;;      | ((symbol symbol*) sexp*)
+;;      | ((symbol symbol* . symbol) sexp*)
 (define (evdef def env)
   (cond ((null? def) (crow-error 'evdef "invalid definition"))
         ((symbol? (car def)) (cons (car def) (crow-eval (cadr def) env)))
@@ -130,16 +152,18 @@
                     (crow-eval (cons 'lambda (cons (cdar def) (cdr def)))
                                env)))))
 
+;; exp -> (symbol sexp)
 (define (evset! exp env)
-  (define par (fetch (car exp) env))
-  (set-cdr! par (crow-eval (cadr exp) env)))
+  (unless (= (length exp) 2)
+    (crow-error 'evset! "invalid form" (cons 'set! exp)))
+  (set-cdr! (fetch (car exp) env)
+            (crow-eval (cadr exp) env)))
 
+;; exp -> (sexp*)
 (define (evbody exp env toplvl)
-  (if (null? exp)
-      '()
+  (if (null? exp) '()
       (let ((val (crow-eval (car exp) env toplvl)))
-        (if (null? (cdr exp))
-            val
+        (if (null? (cdr exp)) val
             (evbody (cdr exp) env toplvl)))))
 
 (define (evspec exp env toplvl)
@@ -155,7 +179,7 @@
      (if toplvl
          (begin (env-insert! env (evdef (cdr exp) env)) '())
          (crow-error 'evspec "definition outside toplevel")))
-    ((set!) (evset! (cdr exp) env))
+    ((set!) (evset! (cdr exp) env) '())
     ((body) (evbody (cdr exp) env toplvl))
     (else #f)))
 
