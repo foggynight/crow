@@ -180,7 +180,7 @@
          (begin (env-insert! env (evdef (cdr exp) env)) '())
          (crow-error 'evspec "definition outside toplevel")))
     ((set!) (evset! (cdr exp) env) '())
-    ((body) (evbody (cdr exp) env toplvl))
+    ((body begin) (evbody (cdr exp) env toplvl))
     (else #f)))
 
 (define (crow-eval exp env #!optional toplvl)
