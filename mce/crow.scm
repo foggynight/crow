@@ -39,21 +39,27 @@
   (error (apply sprintf (cons fmt args))))
 
 ;; environment -----------------------------------------------------------------
+;;
+;; Environments are composed of a list of frames, where each frame is an alist
+;; containing (symbol, value) pairs.
 
-(define (fetch sym env)
+(define (env-fetch sym env)
   (if (null? env)
       (crow-error 'fetch "unbound symbol" sym)
       ((lambda (cell)
-         (if cell cell (fetch sym (cdr env))))
+         (if cell cell (env-fetch sym (cdr env))))
        (assq sym (car env)))))
 
-(define (lookup sym env)
-  (cdr (fetch sym env)))
+(define (env-lookup sym env)
+  (cdr (env-fetch sym env)))
 
-(define (bind keys dats env)
+(define (env-bind-pairs keys dats env)
   (cons (zip keys dats) env))
 
-(define (env-insert! env par)
+(define env-bind-formals env-bind-pairs)
+
+;; Insert PAR into the top frame of ENV.
+(define (env-insert! par env)
   (set-car! env (cons par (car env))))
 
 ;; closure ---------------------------------------------------------------------
@@ -61,15 +67,14 @@
 ;; Closures represent procedures with zero or more free variables bound within
 ;; an environment, they are represented by lists of the form:
 ;;
-;;   ('closure ((args*) ('body exp*)) env)
+;;   ('closure ((args*) ('body sexp*)) env)
 ;;
 ;; Where args, body, and env are from the lambda expression used to create the
 ;; closure.
 
-;; Create a closure from EXP bound in ENV. EXP should be an expression of the
-;; form: ((args*) sexp*).
-(define (closure exp env)
-  `(closure (,(car exp) (body . ,(cdr exp))) ,env))
+;; Create a closure from ARGS and BODY bound in ENV.
+(define (closure args body env)
+  (list 'closure (list args body) env))
 
 (define (closure? exp)
   (and (pair? exp) (eq? (car exp) 'closure)))
@@ -84,7 +89,12 @@
 (define (evlist lst env)
   (map (lambda (x) (crow-eval x env)) lst))
 
-;; TODO: Add EVLAMBDA.
+;; exp  -> (args sexp*)
+;; args -> symbol | (sexp*) | (sexp* . symbol)
+(define (evlambda exp env)
+  (when (null? exp)
+    (crow-error 'evlambda "invalid form" (cons '% exp)))
+  (closure (car exp) (cons 'body (cdr exp)) env))
 
 ;; clauses -> (clause*)
 ;; clause  -> (pred sexp*)
@@ -136,11 +146,11 @@
         (body (cons 'body (cdr exp))))
     (cond ((not (list? binds)) (crow-error 'evlet "invalid binds" binds))
           ((validate-binds binds)
-           (crow-eval body (bind (list-cars binds)
-                                 (evlist (list-cadrs binds) env)
-                                 env))))))
+           (let ((e (env-bind-pairs (list-cars binds)
+                                    (evlist (list-cadrs binds) env)
+                                    env)))
+             (crow-eval body e))))))
 
-;; TODO: Implement this grammar.
 ;; def -> (symbol)
 ;;      | (symbol sexp)
 ;;      | ((symbol symbol*) sexp*)
@@ -156,7 +166,7 @@
 (define (evset! exp env)
   (unless (= (length exp) 2)
     (crow-error 'evset! "invalid form" (cons 'set! exp)))
-  (set-cdr! (fetch (car exp) env)
+  (set-cdr! (env-fetch (car exp) env)
             (crow-eval (cadr exp) env)))
 
 ;; exp -> (sexp*)
@@ -169,7 +179,7 @@
 (define (evspec exp env toplvl)
   (case (car exp)
     ((quote) (cadr exp))
-    ((% lambda) (closure (cdr exp) env))
+    ((% lambda) (evlambda (cdr exp) env))
     ((cond) (evcond (cdr exp) env))
     ((if) (evif (cdr exp) env))
     ((and) (evand (cdr exp) 't env))
@@ -177,14 +187,14 @@
     ((let) (evlet (cdr exp) env))
     ((def define)
      (if toplvl
-         (begin (env-insert! env (evdef (cdr exp) env)) '())
+         (begin (env-insert! (evdef (cdr exp) env) env) '())
          (crow-error 'evspec "definition outside toplevel")))
     ((set!) (evset! (cdr exp) env) '())
     ((body begin) (evbody (cdr exp) env toplvl))
     (else #f)))
 
 (define (crow-eval exp env #!optional toplvl)
-  (cond ((symbol? exp) (lookup exp env))
+  (cond ((symbol? exp) (env-lookup exp env))
         ((or (number? exp) (char? exp) (string? exp)) exp)
         ((list? exp) (let ((val (evspec exp env toplvl)))
                        (if val val (crow-apply (crow-eval (car exp) env)
@@ -194,9 +204,9 @@
 (define (crow-apply proc args)
   (cond ((primitive? proc) (papply proc args))
         ((closure? proc) (crow-eval (closure-body proc)
-                                    (bind (closure-args proc)
-                                          args
-                                          (closure-env proc))))
+                                    (env-bind-formals (closure-args proc)
+                                                      args
+                                                      (closure-env proc))))
         (else (crow-error 'crow-apply "invalid procedure" proc))))
 
 ;; primitive -------------------------------------------------------------------
