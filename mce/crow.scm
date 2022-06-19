@@ -56,7 +56,18 @@
 (define (env-bind-pairs keys dats env)
   (cons (zip keys dats) env))
 
-(define env-bind-formals env-bind-pairs)
+(define (env-bind-formals keys dats env)
+  (define (bind k d)
+    (cond ((null? k) (if (null? d) '()
+                         (crow-error 'env-bind-formals "too many arguments")))
+          ((null? d) (if (symbol? k)
+                         (cons (cons k '()) '())
+                         (crow-error 'env-bind-formals "missing arguments")))
+          ((symbol? k) (cons (cons k d) '()))
+          (else (cons (cons (car k) (car d))
+                      (bind (cdr k) (cdr d))))))
+  (let ((frame (bind keys dats)))
+    (cons frame env)))
 
 ;; Insert PAR into the top frame of ENV.
 (define (env-insert! par env)
@@ -151,8 +162,7 @@
                                     env)))
              (crow-eval body e))))))
 
-;; def -> (symbol)
-;;      | (symbol sexp)
+;; def -> (symbol sexp?)
 ;;      | ((symbol symbol*) sexp*)
 ;;      | ((symbol symbol* . symbol) sexp*)
 (define (evdef def env)
