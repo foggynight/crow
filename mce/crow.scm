@@ -73,6 +73,8 @@
 (define (env-insert! par env)
   (set-car! env (cons par (car env))))
 
+(define (make-toplevel) (list '() (primitives)))
+
 ;; closure ---------------------------------------------------------------------
 ;;
 ;; Closures represent procedures with zero or more free variables bound within
@@ -248,7 +250,7 @@
 
 ;; main ------------------------------------------------------------------------
 
-(define toplevel (list '() (primitives))) ; toplevel environment
+(define toplevel (make-toplevel))
 
 (define (main-load #!optional (args (command-line-arguments)))
   (unless (or (null? args) (string=? (car args) "-q"))
