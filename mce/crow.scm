@@ -46,8 +46,8 @@
 (define (env-fetch sym env)
   (if (null? env)
       (crow-error 'fetch "unbound symbol" sym)
-      ((lambda (cell)
-         (if cell cell (env-fetch sym (cdr env))))
+      ((lambda (par)
+         (if par par (env-fetch sym (cdr env))))
        (assq sym (car env)))))
 
 (define (env-lookup sym env)
