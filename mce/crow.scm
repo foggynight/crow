@@ -164,6 +164,13 @@
                                     env)))
              (crow-eval body e))))))
 
+;; exp -> (sexp*)
+(define (evbody exp env toplvl)
+  (if (null? exp) '()
+      (let ((val (crow-eval (car exp) env toplvl)))
+        (if (null? (cdr exp)) val
+            (evbody (cdr exp) env toplvl)))))
+
 ;; def -> (symbol sexp?)
 ;;      | ((symbol symbol*) sexp*)
 ;;      | ((symbol symbol* . symbol) sexp*)
@@ -181,13 +188,6 @@
   (set-cdr! (env-fetch (car exp) env)
             (crow-eval (cadr exp) env)))
 
-;; exp -> (sexp*)
-(define (evbody exp env toplvl)
-  (if (null? exp) '()
-      (let ((val (crow-eval (car exp) env toplvl)))
-        (if (null? (cdr exp)) val
-            (evbody (cdr exp) env toplvl)))))
-
 (define (evspec exp env toplvl)
   (case (car exp)
     ((quote) (cadr exp))
@@ -197,12 +197,12 @@
     ((and) (evand (cdr exp) 't env))
     ((or) (evor (cdr exp) '() env))
     ((let) (evlet (cdr exp) env))
+    ((body begin) (evbody (cdr exp) env toplvl))
     ((def define)
      (if toplvl
          (begin (env-insert! (evdef (cdr exp) env) env) '())
          (crow-error 'evspec "definition outside toplevel")))
     ((set!) (evset! (cdr exp) env) '())
-    ((body begin) (evbody (cdr exp) env toplvl))
     (else #f)))
 
 (define (crow-eval exp env #!optional toplvl)
