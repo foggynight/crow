@@ -230,9 +230,7 @@
 
 ;; repl ------------------------------------------------------------------------
 
-(define (display-banner)
-  (printf "CROW v0.0.0~%~
-           (C) 2022 Robert Coffey~%"))
+(define (display-banner) (display "CROW v0.0.0\n(C) 2022 Robert Coffey\n"))
 (define (display-prompt) (display "> "))
 
 (define (crow-repl ip #!optional prompt)
