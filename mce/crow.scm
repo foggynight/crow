@@ -100,6 +100,17 @@
   (define binds (frame-binds (car frames)))
   (set-car! frames (make-frame name (cons par binds))))
 
+(define (env-import! name)
+  (unless (symbol? name)
+    (crow-error 'env-import! "name must be a symbol" name))
+  (set! toplevel (make-env (cons (make-frame name '())
+                                 (env-frames toplevel))))
+  (crow-load (string-append (symbol->string name) ".crw"))
+  (let ((frames (env-frames toplevel)))
+    (set! toplevel (make-env (cons (cadr frames)
+                                   (cons (car frames)
+                                         (cddr frames)))))))
+
 (define (make-toplevel)
   (make-env (list (make-frame 'user '())
                   (make-frame 'core (primitives)))))

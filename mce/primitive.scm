@@ -112,6 +112,7 @@
   ;; misc
   (args . ,command-line-arguments)
   (load . ,(lambda (name) (crow-load name) '()))
+  (import . ,(lambda (name) (env-import! name) '()))
   (exit . ,exit)
   (error . ,crow-error)
   (void . ,void)
