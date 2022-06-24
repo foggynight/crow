@@ -39,22 +39,46 @@
   (error (apply sprintf (cons fmt args))))
 
 ;; environment -----------------------------------------------------------------
-;;
-;; Environments are composed of a list of frames, where each frame is an alist
-;; containing (symbol, value) pairs.
 
+(define-record-type env
+  (make-env frames) env?
+  (frames env-frames env-frames-set!)) ; list of frames in the env
+
+(define-record-printer (env e op)
+  (let ((frames (env-frames e)))
+    (fprintf op "#<env [~A]" (length frames))
+    (for-each (lambda (f)
+                (display " " op)
+                (display f op))
+              frames))
+  (display ">" op))
+
+(define-record-type frame
+  (make-frame name binds) frame?
+  (name frame-name frame-name-set!)     ; name of the frame
+  (binds frame-binds frame-binds-set!)) ; list of binds in the frame
+
+(define-record-printer (frame f op)
+  (fprintf op "#<frame ~A [~A]>"
+           (frame-name f)
+           (length (frame-binds f))))
+
+;; Fetch the pair whose CAR is SYM from the frames of ENV.
 (define (env-fetch sym env)
-  (if (null? env)
-      (crow-error 'fetch "unbound symbol" sym)
-      ((lambda (par)
-         (if par par (env-fetch sym (cdr env))))
-       (assq sym (car env)))))
+  (define (&env-fetch frames)
+    (if (null? frames)
+        (crow-error 'fetch "unbound symbol" sym)
+        ((lambda (par)
+           (if par par (&env-fetch (cdr frames))))
+         (assq sym (frame-binds (car frames))))))
+  (&env-fetch (env-frames env)))
 
+;; Get the CDR of the pair whose CAR is SYM from the frames of ENV.
 (define (env-lookup sym env)
   (cdr (env-fetch sym env)))
 
 (define (env-bind-pairs keys dats env)
-  (cons (zip keys dats) env))
+  (make-env (cons (make-frame '? (zip keys dats)) (env-frames env))))
 
 (define (env-bind-formals keys dats env)
   (define (bind k d)
@@ -66,14 +90,19 @@
           ((symbol? k) (cons (cons k d) '()))
           (else (cons (cons (car k) (car d))
                       (bind (cdr k) (cdr d))))))
-  (let ((frame (bind keys dats)))
-    (cons frame env)))
+  (let ((frame (make-frame '? (bind keys dats))))
+    (make-env (cons frame (env-frames env)))))
 
 ;; Insert PAR into the top frame of ENV.
 (define (env-insert! par env)
-  (set-car! env (cons par (car env))))
+  (define frames (env-frames env))
+  (define name (frame-name (car frames)))
+  (define binds (frame-binds (car frames)))
+  (set-car! frames (make-frame name (cons par binds))))
 
-(define (make-toplevel) (list '() (primitives)))
+(define (make-toplevel)
+  (make-env (list (make-frame 'user '())
+                  (make-frame 'core (primitives)))))
 
 ;; closure ---------------------------------------------------------------------
 ;;
