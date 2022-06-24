@@ -213,15 +213,17 @@
         (if (null? (cdr exp)) val
             (evbody (cdr exp) env toplvl)))))
 
-;; def -> (symbol sexp?)
+;; exp -> (symbol sexp?)
 ;;      | ((symbol symbol*) sexp*)
 ;;      | ((symbol symbol* . symbol) sexp*)
-(define (evdef def env)
-  (cond ((null? def) (crow-error 'evdef "invalid definition"))
-        ((symbol? (car def)) (cons (car def) (crow-eval (cadr def) env)))
-        (else (cons (caar def)
-                    (crow-eval (cons 'lambda (cons (cdar def) (cdr def)))
-                               env)))))
+(define (evdef exp env)
+  (define def
+    (cond ((null? exp) (crow-error 'evdef "invalid definition"))
+          ((symbol? (car exp)) (cons (car exp) (crow-eval (cadr exp) env)))
+          (else (cons (caar exp)
+                      (crow-eval (cons 'lambda (cons (cdar exp) (cdr exp)))
+                                 env)))))
+  (env-insert! def env))
 
 ;; exp -> (symbol sexp)
 (define (evset! exp env)
@@ -240,10 +242,7 @@
     ((or) (evor (cdr exp) '() env))
     ((let) (evlet (cdr exp) env))
     ((body begin) (evbody (cdr exp) env toplvl))
-    ((def define)
-     (if toplvl
-         (begin (env-insert! (evdef (cdr exp) env) env) '())
-         (crow-error 'evspec "definition outside toplevel")))
+    ((def define) (evdef (cdr exp) env) '())
     ((set!) (evset! (cdr exp) env) '())
     (else #f)))
 
