@@ -21,7 +21,7 @@
 
 ;; misc ------------------------------------------------------------------------
 
-(define (null) '())
+(define (null . rest) '())
 
 (define true? (compose not null?))
 (define false? null?)
