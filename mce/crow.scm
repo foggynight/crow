@@ -21,6 +21,8 @@
 
 ;; misc ------------------------------------------------------------------------
 
+(define (null) '())
+
 (define true? (compose not null?))
 (define false? null?)
 (define (bool->atom bool) (if bool 't '()))
