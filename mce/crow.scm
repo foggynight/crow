@@ -248,7 +248,8 @@
     (else #f)))
 
 (define (crow-eval exp env #!optional toplvl)
-  (cond ((symbol? exp) (env-lookup exp env))
+  (cond ((null? exp) (crow-error 'crow-eval "invalid expression" '()))
+        ((symbol? exp) (env-lookup exp env))
         ((or (number? exp) (char? exp) (string? exp)) exp)
         ((list? exp) (let ((val (evspec exp env toplvl)))
                        (if val val (crow-apply (crow-eval (car exp) env)
