@@ -42,7 +42,7 @@
 
 (define-record-type env
   (make-env frames) env?
-  (frames env-frames env-frames-set!)) ; list of frames in the env
+  (frames env-frames)) ; list of frames in the env
 
 (define-record-printer (env e op)
   (let ((frames (env-frames e)))
@@ -55,8 +55,8 @@
 
 (define-record-type frame
   (make-frame name binds) frame?
-  (name frame-name frame-name-set!)     ; name of the frame
-  (binds frame-binds frame-binds-set!)) ; list of binds in the frame
+  (name frame-name)    ; name of the frame
+  (binds frame-binds)) ; list of binds in the frame
 
 (define-record-printer (frame f op)
   (fprintf op "#<frame ~A [~A]>"
