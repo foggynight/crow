@@ -64,11 +64,11 @@
 
   ;; character
   (char? . ,(compose bool->atom char?))
-  (char=? . ,(compose bool->atom char=?))
-  (char<? . ,(compose bool->atom char<?))
-  (char>? . ,(compose bool->atom char>?))
-  (char<=? . ,(compose bool->atom char<=?))
-  (char>=? . ,(compose bool->atom char>=?))
+  (char= . ,(compose bool->atom char=?))
+  (char< . ,(compose bool->atom char<?))
+  (char> . ,(compose bool->atom char>?))
+  (char<= . ,(compose bool->atom char<=?))
+  (char>= . ,(compose bool->atom char>=?))
   (char->int . ,char->integer)
   (int->char . ,integer->char)
 
