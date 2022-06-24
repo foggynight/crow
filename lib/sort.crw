@@ -9,3 +9,10 @@
 
 (def (list-sort lst pred)
   (sort_sort lst pred))
+
+(def (vec-sort vec pred)
+  (list->vec (sort_sort (vec->list vec) pred)))
+
+(def (sort seq pred)
+  (cond ((vec? seq) (vec-sort seq pred))
+        (else (list-sort seq pred))))
