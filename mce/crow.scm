@@ -9,7 +9,7 @@
 ;;   ./crow.scm
 ;;
 ;; COMPILE
-;;   make mce
+;;   make
 ;;   ./crow [FILE...]
 ;;
 ;; NOTE: Filenames can only be passed as arguments when the program is compiled,
