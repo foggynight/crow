@@ -11,8 +11,12 @@
   (sort_sort lst pred))
 
 (def (vec-sort vec pred)
-  (list->vec (sort_sort (vec->list vec) pred)))
+  (list->vec (list-sort (vec->list vec) pred)))
+
+(def (str-sort str pred)
+  (list->str (list-sort (str->list str) pred)))
 
 (def (sort seq pred)
   (cond ((vec? seq) (vec-sort seq pred))
+        ((str? seq) (str-sort seq pred))
         (else (list-sort seq pred))))
