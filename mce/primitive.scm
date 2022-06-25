@@ -137,8 +137,8 @@
   (curr-out-port . ,current-output-port)
   (open-in-file . ,open-input-file)
   (open-out-file . ,open-output-file)
-  (close-in-port . ,close-input-port)
-  (close-out-port . ,close-output-port)
+  (close-in-port . ,(compose null close-input-port))
+  (close-out-port . ,(compose null close-output-port))
 
   ;; input
   (eof? . ,(compose bool->atom eof-object?))
@@ -148,11 +148,11 @@
   (peek-char . ,peek-char)
 
   ;; output
-  (write . ,write)
-  (display . ,display)
-  (print . ,print)
-  (newline . ,newline)
-  (write-char . ,write-char)
+  (write . ,(compose null write))
+  (display . ,(compose null display))
+  (print . ,(compose null print))
+  (newline . ,(compose null newline))
+  (write-char . ,(compose null write-char))
 
   ;; misc
   (args . ,command-line-arguments)
