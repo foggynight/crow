@@ -4,6 +4,7 @@ DONE add lambda argument syntaxes
 DONE add nested definitions
 DONE add named LET
 TODO add QUASIQUOTE
+TODO add DO special form
 TODO add symbolic macros
 TODO add WHEN and UNLESS
 TODO add arguments (-q, --quiet)
