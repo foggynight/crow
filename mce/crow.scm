@@ -144,6 +144,17 @@
 (define (evlist lst env)
   (map (lambda (x) (crow-eval x env)) lst))
 
+;; exp -> sexp
+(define (evquasi exp env)
+  (define (&quote e) (cons e (evquasi (cdr exp) env)))
+  (define (&insert e) (cons (crow-eval e env) (evquasi (cdr exp) env)))
+  (define (&splice e) (append (crow-eval e env) (evquasi (cdr exp) env)))
+  (cond ((not (pair? exp)) exp)
+        ((not (pair? (car exp))) (&quote (car exp)))
+        ((eq? (caar exp) 'unquote) (&insert (cadar exp)))
+        ((eq? (caar exp) 'unquote-splicing) (&splice (cadar exp)))
+        (else (&quote (car exp)))))
+
 ;; exp  -> (args sexp*)
 ;; args -> symbol | (sexp*) | (sexp* . symbol)
 (define (evlambda exp env)
@@ -252,6 +263,7 @@
 (define (evspec exp env toplvl)
   (case (car exp)
     ((quote) (cadr exp))
+    ((quasiquote) (evquasi (cadr exp) env))
     ((% lambda) (evlambda (cdr exp) env))
     ((cond) (evcond (cdr exp) env))
     ((if) (evif (cdr exp) env))
