@@ -17,6 +17,8 @@
 
   ;; number
   (num? . ,(compose bool->atom number?))
+  (1+ . ,(lambda (n) (+ n 1)))
+  (1- . ,(lambda (n) (- n 1)))
   (+ . ,+)
   (- . ,-)
   (* . ,*)
