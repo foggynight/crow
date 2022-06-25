@@ -5,6 +5,9 @@
   (toplevel . ,(lambda () toplevel))
 
   ;; logic
+  (eq? . ,(compose bool->atom eq?))
+  (eqv? . ,(compose bool->atom eqv?))
+  (equal? . ,(compose bool->atom equal?))
   (not . ,(lambda (x) (if (null? x) 't '())))
 
   ;; symbol
