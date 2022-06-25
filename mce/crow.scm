@@ -309,7 +309,9 @@
   (let ((exp (read ip)))
     (if (eof-object? exp)
         (when prompt (newline) (exit))
-        (begin ((lambda (x)
+        (begin (when (eqv? (peek-char ip) #\newline)
+                 (read-char ip)) ; flush newline
+               ((lambda (x)
                   (when prompt (write x) (newline)))
                 (crow-eval exp toplevel #t))
                (crow-repl ip prompt)))))
