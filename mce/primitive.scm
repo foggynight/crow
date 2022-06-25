@@ -4,10 +4,6 @@
   ;; environment
   (toplevel . ,(lambda () toplevel))
 
-  ;; eval / apply
-  (eval . ,crow-eval)
-  (apply . ,crow-apply)
-
   ;; logic
   (not . ,(lambda (x) (if (null? x) 't '())))
 

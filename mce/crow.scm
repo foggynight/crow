@@ -261,7 +261,10 @@
             (crow-eval (cadr exp) env)))
 
 (define (evspec exp env)
+  (define (eval e) (crow-eval e env))
   (case (car exp)
+    ((eval) (eval (eval (cadr exp))))
+    ((apply) (crow-apply (eval (cadr exp)) (eval (caddr exp))))
     ((quote) (cadr exp))
     ((quasiquote) (evquasi (cadr exp) env))
     ((% lambda) (evlambda (cdr exp) env))
