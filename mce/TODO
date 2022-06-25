@@ -2,7 +2,7 @@ DONE improve error handling
 DONE add error checking to special forms
 DONE add lambda argument syntaxes
 DONE add nested definitions
-TODO add named LET
+DONE add named LET
 TODO add QUASIQUOTE
 TODO add symbolic macros
 TODO add WHEN and UNLESS
