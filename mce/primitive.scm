@@ -93,6 +93,7 @@
   ;; character
   (char? . ,(compose bool->atom char?))
   (char= . ,(compose bool->atom char=?))
+  (char<> . ,(compose bool->atom not char=?))
   (char< . ,(compose bool->atom char<?))
   (char> . ,(compose bool->atom char>?))
   (char<= . ,(compose bool->atom char<=?))
