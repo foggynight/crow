@@ -235,11 +235,11 @@
         (crow-eval body e)))))
 
 ;; exp -> (sexp*)
-(define (evbody exp env toplvl)
+(define (evbody exp env)
   (if (null? exp) '()
-      (let ((val (crow-eval (car exp) env toplvl)))
+      (let ((val (crow-eval (car exp) env)))
         (if (null? (cdr exp)) val
-            (evbody (cdr exp) env toplvl)))))
+            (evbody (cdr exp) env)))))
 
 ;; exp -> (symbol sexp?)
 ;;      | ((symbol symbol*) sexp*)
@@ -260,7 +260,7 @@
   (set-cdr! (env-fetch (car exp) env)
             (crow-eval (cadr exp) env)))
 
-(define (evspec exp env toplvl)
+(define (evspec exp env)
   (case (car exp)
     ((quote) (cadr exp))
     ((quasiquote) (evquasi (cadr exp) env))
@@ -270,16 +270,16 @@
     ((and) (evand (cdr exp) 't env))
     ((or) (evor (cdr exp) '() env))
     ((let) (evlet (cdr exp) env))
-    ((body begin) (evbody (cdr exp) env toplvl))
+    ((body begin) (evbody (cdr exp) env))
     ((def define) (evdef (cdr exp) env) '())
     ((set!) (evset! (cdr exp) env) '())
     (else #f)))
 
-(define (crow-eval exp env #!optional toplvl)
+(define (crow-eval exp env)
   (cond ((null? exp) (crow-error 'crow-eval "invalid expression" '()))
         ((symbol? exp) (env-lookup exp env))
         ((or (number? exp) (char? exp) (string? exp)) exp)
-        ((list? exp) (let ((val (evspec exp env toplvl)))
+        ((list? exp) (let ((val (evspec exp env)))
                        (if val val (crow-apply (crow-eval (car exp) env)
                                                (evlist (cdr exp) env)))))
         (else (crow-error 'crow-eval "invalid expression" exp))))
@@ -313,7 +313,7 @@
                  (read-char ip)) ; flush newline
                ((lambda (x)
                   (when prompt (write x) (newline)))
-                (crow-eval exp toplevel #t))
+                (crow-eval exp toplevel))
                (crow-repl ip prompt)))))
 
 (define (crow-load name)
