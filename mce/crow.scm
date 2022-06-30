@@ -42,6 +42,8 @@
 
 ;; environment -----------------------------------------------------------------
 
+(define-constant LIB-PATH "/usr/local/lib/crow/")
+
 (define-record-type env
   (make-env frames) env?
   (frames env-frames)) ; list of frames in the env
@@ -107,7 +109,7 @@
     (crow-error 'env-import! "name must be a symbol" name))
   (set! toplevel (make-env (cons (make-frame name '())
                                  (env-frames toplevel))))
-  (crow-load (string-append (symbol->string name) ".crw"))
+  (crow-load (string-append LIB-PATH (symbol->string name) ".crw"))
   (let ((frames (env-frames toplevel)))
     (set! toplevel (make-env (cons (cadr frames)
                                    (cons (car frames)
