@@ -99,6 +99,8 @@
   (char> . ,(compose bool->atom char>?))
   (char<= . ,(compose bool->atom char<=?))
   (char>= . ,(compose bool->atom char>=?))
+  (char-upper . ,char-upcase)
+  (char-lower . ,char-downcase)
   (char->int . ,char->integer)
   (int->char . ,integer->char)
 
@@ -152,6 +154,7 @@
   (write . ,(compose null write))
   (display . ,(compose null display))
   (print . ,(compose null print))
+  (space . ,(lambda () (display #\space)))
   (newline . ,(compose null newline))
   (write-char . ,(compose null write-char))
 
