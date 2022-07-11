@@ -74,11 +74,9 @@ static size_t read_sexp_str(const char *str, vec_t *words) {
 
 // token -----------------------------------------------------------------------
 
-#define TOK_QUOTE &(tok_t){ .type = QUOTE, .word = "quote" }
-
 typedef enum tok_type {
-    SYMBOL, BOOL, NUMBER, CHARACTER, STRING,
-    QUOTE, PAREN_OPEN, PAREN_CLOSE
+    TOK_SYMBOL, TOK_NUMBER, TOK_BOOL, TOK_CHARACTER, TOK_STRING,
+    TOK_QUOTE, TOK_PAREN_OPEN, TOK_PAREN_CLOSE
 } tok_type_t;
 
 typedef struct tok {
@@ -89,10 +87,8 @@ typedef struct tok {
 static tok_t *make_tok(tok_type_t type, char *word) {
     tok_t *tok = malloc(sizeof *tok);
     if (!tok) error("make_tok: malloc failed");
-
     tok->type = type;
     tok->word = word;
-
     return tok;
 }
 
@@ -102,11 +98,11 @@ static void dest_tok(tok_t *tok) {
 }
 
 static bool tok_type_is_atom(tok_type_t type) {
-    return type == SYMBOL
-        || type == BOOL
-        || type == NUMBER
-        || type == CHARACTER
-        || type == STRING;
+    return type == TOK_SYMBOL
+        || type == TOK_BOOL
+        || type == TOK_NUMBER
+        || type == TOK_CHARACTER
+        || type == TOK_STRING;
 }
 
 static bool tok_is_atom(tok_t *tok) {
@@ -118,10 +114,10 @@ static bool tok_is_atom(tok_t *tok) {
 static tok_t *lex_word(char *word) {
     tok_type_t type;
     switch (word[0]) {
-    case '\'': type = QUOTE; break;
-    case '(': type = PAREN_OPEN; break;
-    case ')': type = PAREN_CLOSE; break;
-    default: type = SYMBOL; // temporary
+    case '\'': type = TOK_QUOTE; break;
+    case '(':  type = TOK_PAREN_OPEN; break;
+    case ')':  type = TOK_PAREN_CLOSE; break;
+    default:   type = TOK_SYMBOL; // temporary
     }
     return make_tok(type, word);
 }
@@ -139,14 +135,16 @@ typedef struct ast {
     vec_t *children; // Vector of ASTs if this AST is a list, otherwise NULL.
 } ast_t;
 
+static tok_t _tok_quote = { .type = TOK_QUOTE, .word = "quote" };
+static ast_t *ast_quote =
+    &(ast_t){ .type = AST_ATOM, .tok = &_tok_quote, .children = NULL };
+
 static ast_t *make_ast(void) {
     ast_t *ast = malloc(sizeof *ast);
     if (!ast) error("make_ast: malloc failed");
-
     ast->type = AST_NULL;
     ast->tok = NULL;
     ast->children = NULL;
-
     return ast;
 }
 
@@ -162,7 +160,7 @@ static void ast_set_tok(ast_t *ast, tok_t *tok) {
 static void ast_add_child(ast_t *ast, ast_t *child) {
     if (!ast->children)
         ast->children = make_vec(1);
-    vec_push(ast->children, child);
+    vec_push(ast->children, (void *)child);
 }
 
 static size_t ast_child_count(ast_t *ast) {
@@ -200,9 +198,6 @@ static size_t cnt;  // number of tokens to parse
 static tok_t *tok; // current token being parsed
 static size_t pos; // index of current token in toks
 
-static ast_t *ast_quote =
-    &(ast_t){ .type = AST_ATOM, .tok = TOK_QUOTE, .children = NULL };
-
 static void parse_error(void) {
     error("parse error");
 }
@@ -231,9 +226,9 @@ static ast_t *atom(ast_t *ast) {
 }
 
 static ast_t *quote(ast_t *ast) {
-    if (!tok || tok->type != QUOTE)
+    if (!tok || tok->type != TOK_QUOTE)
         parse_error();
-    match(QUOTE);
+    match(TOK_QUOTE);
 
     if (!ast) ast = make_ast();
     ast->type = AST_LIST;
@@ -247,10 +242,10 @@ static size_t rest(ast_t *ast, size_t cnt) {
     if (!tok) parse_error();
 
     const tok_type_t t = tok->type;
-    if (tok_type_is_atom(t) || t == QUOTE || t == PAREN_OPEN) {
+    if (tok_type_is_atom(t) || t == TOK_QUOTE || t == TOK_PAREN_OPEN) {
         ast_add_child(ast, sexp(NULL));
         return rest(ast, cnt + 1);
-    } else if (t == PAREN_CLOSE) {
+    } else if (t == TOK_PAREN_CLOSE) {
         return cnt;
     } else {
         parse_error();
@@ -264,12 +259,12 @@ static ast_t *sexp(ast_t *ast) {
     if (!ast) ast = make_ast();
     if (tok_is_atom(tok)) {
         return atom(ast);
-    } else if (tok->type == QUOTE) {
+    } else if (tok->type == TOK_QUOTE) {
         return quote(ast);
-    } else if (tok->type == PAREN_OPEN) {
-        match(PAREN_OPEN);
+    } else if (tok->type == TOK_PAREN_OPEN) {
+        match(TOK_PAREN_OPEN);
         size_t cnt = rest(ast, 0);
-        match(PAREN_CLOSE);
+        match(TOK_PAREN_CLOSE);
         ast->type = (cnt > 0) ? AST_LIST : AST_NULL;
         return ast;
     } else {
