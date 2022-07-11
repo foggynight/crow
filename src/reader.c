@@ -16,17 +16,23 @@
 
 // TODO: Handle strings, that is, treat characters delimited by double quotes as
 // a single word.
-static char *read_word(FILE *file) {
+static char *read_word(FILE *file, char **str, bool is_file) {
     static char word[WORD_MAX];
 
     size_t next = 0;
-    for (int c; (c = getc(file)) != EOF;) {
+    for (int c;
+         is_file
+             ? (c = getc(file)) != EOF
+             : (c = *(*str)++) != '\0';)
+    {
         if (strchr(delim_drop, c)) {
             if (next == 0) continue; // skip leading whitespace
             else break;
         } else if (strchr(delim_keep, c)) {
             if (next == 0) word[next++] = c; // delimiter is word
-            else ungetc(c, file);
+            // delimiter is not word, put character back
+            else if (is_file) ungetc(c, file);
+            else --(*str);
             break;
         } else {
             word[next++] = c;
@@ -37,9 +43,9 @@ static char *read_word(FILE *file) {
     return next ? strdup(word) : NULL;
 }
 
-static size_t read_sexp(FILE *file, vec_t *words) {
+static size_t read_sexp(FILE *file, char **str, bool is_file, vec_t *words) {
     size_t stk = 0;
-    for (char *word; (word = read_word(file)) != NULL;) {
+    for (char *word; (word = read_word(file, str, is_file)) != NULL;) {
         if (word[0] == '(') { ++stk; }
         else if (word[0] == ')') {
             if (stk == 0)
@@ -53,17 +59,17 @@ static size_t read_sexp(FILE *file, vec_t *words) {
     return vec_size(words);
 }
 
-// TODO: Do this right.
-static size_t read_sexp_str(char *str, vec_t *words) {
-    FILE *tmp_file = fopen(TMP_NAME, "w+");
-    if (!tmp_file) error("failed to open temp file: %s", TMP_NAME);
+static size_t read_sexp_file(FILE *file, vec_t *words) {
+    return read_sexp(file, NULL, true, words);
+}
 
-    fputs(str, tmp_file);
-    fseek(tmp_file, 0, SEEK_SET);
-    size_t k = read_sexp(tmp_file, words);
-
-    fclose(tmp_file);
-    return k;
+static size_t read_sexp_str(const char *str, vec_t *words) {
+    char *copy, *start;
+    copy = start = strdup(str);
+    if (!copy) error("read_sexp_str: strdup failed");
+    const size_t ret = read_sexp(NULL, &copy, false, words);
+    free(start);
+    return ret;
 }
 
 // token -----------------------------------------------------------------------
@@ -287,7 +293,7 @@ static ast_t *parse_sexp(vec_t *sexp_toks) {
 // TODO: Add sexp_t and return a (sexp_t *) from this function.
 void crow_read(FILE *file) {
     vec_t *words = make_vec(1);
-    // read_sexp(stdin, words);
+    //read_sexp(stdin, words);
     read_sexp_str("(test 'foo '() (foo '(bar 'baz)))", words);
 
     vec_t *toks = make_vec(1);
