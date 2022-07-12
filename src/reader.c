@@ -76,7 +76,7 @@ static size_t read_sexp_str(const char *str, vec_t *words) {
 
 typedef enum tok_type {
     TOK_SYMBOL, TOK_NUMBER, TOK_BOOL, TOK_CHARACTER, TOK_STRING,
-    TOK_QUOTE, TOK_PAREN_OPEN, TOK_PAREN_CLOSE
+    TOK_QUOTE, TOK_OPEN, TOK_CLOSE
 } tok_type_t;
 
 typedef struct tok {
@@ -99,8 +99,8 @@ static void dest_tok(tok_t *tok) {
 
 static bool tok_type_is_atom(tok_type_t type) {
     return type == TOK_SYMBOL
-        || type == TOK_BOOL
         || type == TOK_NUMBER
+        || type == TOK_BOOL
         || type == TOK_CHARACTER
         || type == TOK_STRING;
 }
@@ -115,8 +115,8 @@ static tok_t *lex_word(char *word) {
     tok_type_t type;
     switch (word[0]) {
     case '\'': type = TOK_QUOTE; break;
-    case '(':  type = TOK_PAREN_OPEN; break;
-    case ')':  type = TOK_PAREN_CLOSE; break;
+    case '(':  type = TOK_OPEN; break;
+    case ')':  type = TOK_CLOSE; break;
     default:   type = TOK_SYMBOL; // temporary
     }
     return make_tok(type, word);
@@ -242,10 +242,10 @@ static size_t rest(ast_t *ast, size_t cnt) {
     if (!tok) parse_error();
 
     const tok_type_t t = tok->type;
-    if (tok_type_is_atom(t) || t == TOK_QUOTE || t == TOK_PAREN_OPEN) {
+    if (tok_type_is_atom(t) || t == TOK_QUOTE || t == TOK_OPEN) {
         ast_add_child(ast, sexp(NULL));
         return rest(ast, cnt + 1);
-    } else if (t == TOK_PAREN_CLOSE) {
+    } else if (t == TOK_CLOSE) {
         return cnt;
     } else {
         parse_error();
@@ -261,10 +261,10 @@ static ast_t *sexp(ast_t *ast) {
         return atom(ast);
     } else if (tok->type == TOK_QUOTE) {
         return quote(ast);
-    } else if (tok->type == TOK_PAREN_OPEN) {
-        match(TOK_PAREN_OPEN);
+    } else if (tok->type == TOK_OPEN) {
+        match(TOK_OPEN);
         size_t cnt = rest(ast, 0);
-        match(TOK_PAREN_CLOSE);
+        match(TOK_CLOSE);
         ast->type = (cnt > 0) ? AST_LIST : AST_NULL;
         return ast;
     } else {
