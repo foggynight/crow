@@ -5,6 +5,8 @@
 
 #include <stdio.h>
 
-void crow_read(FILE *file);
+#include "sexp.h"
+
+sexp_t *crow_read(FILE *file);
 
 #endif // READER_H

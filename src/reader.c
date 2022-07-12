@@ -174,6 +174,10 @@ static sexp_t *parse(vec_t *sexp_toks) {
     toks = sexp_toks;
     cnt = vec_size(toks);
 
+    if (cnt == 0) {
+        return NULL;
+    }
+
     pos = 0;
     next_token();
 
@@ -182,21 +186,13 @@ static sexp_t *parse(vec_t *sexp_toks) {
 
 // reader ----------------------------------------------------------------------
 
-// TODO: Add sexp_t and return a (sexp_t *) from this function.
-void crow_read(FILE *file) {
+sexp_t *crow_read(FILE *file) {
     vec_t *words = make_vec(1);
-    //read_sexp(stdin, words);
-    //read_sexp_str("test", words);
-    //read_sexp_str("'", words);
-    //read_sexp_str("''test", words);
-    //read_sexp_str("'(1 2 3)", words);
-    read_sexp_str("(test 'foo '() (foo '(bar 'baz)))", words);
+    read_sexp_file(file, words);
 
     vec_t *toks = make_vec(1);
     for (size_t i = 0; i < vec_size(words); ++i)
         vec_push(toks, lex_word(vec_get(words, i)));
 
-    sexp_t *sexp = parse(toks);
-    print_sexp(sexp);
-    putchar('\n');
+    return parse(toks);
 }
