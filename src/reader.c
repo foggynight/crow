@@ -8,12 +8,11 @@
 #include "error.h"
 #include "global.h"
 #include "limit.h"
+#include "sexp.h"
 #include "token.h"
 #include "vector.h"
 
 // input -----------------------------------------------------------------------
-
-#define TMP_NAME "/tmp/crow_sexp"
 
 // TODO: Handle strings, that is, treat characters delimited by double quotes as
 // a single word.
@@ -86,165 +85,99 @@ static tok_t *lex_word(char *word) {
     return make_tok(type, word);
 }
 
-// ast -------------------------------------------------------------------------
-
-typedef enum ast_type {
-    AST_NULL, AST_ATOM, AST_LIST
-} ast_type_t;
-
-// Abstract syntax tree structure.
-typedef struct ast {
-    ast_type_t type; // Type of this AST, null, atom, or list.
-    tok_t *tok;      // Token if this AST is an atom, otherwise NULL.
-    vec_t *children; // Vector of ASTs if this AST is a list, otherwise NULL.
-} ast_t;
-
-static tok_t _tok_quote = { .type = TOK_QUOTE, .word = "quote" };
-static ast_t *ast_quote =
-    &(ast_t){ .type = AST_ATOM, .tok = &_tok_quote, .children = NULL };
-
-static ast_t *make_ast(void) {
-    ast_t *ast = malloc(sizeof *ast);
-    if (!ast) error("make_ast: malloc failed");
-    ast->type = AST_NULL;
-    ast->tok = NULL;
-    ast->children = NULL;
-    return ast;
-}
-
-static void dest_ast(ast_t *ast) {
-    dest_vec(ast->children);
-    free(ast);
-}
-
-static void ast_set_tok(ast_t *ast, tok_t *tok) {
-    ast->tok = tok;
-}
-
-static void ast_add_child(ast_t *ast, ast_t *child) {
-    if (!ast->children)
-        ast->children = make_vec(1);
-    vec_push(ast->children, (void *)child);
-}
-
-static size_t ast_child_count(ast_t *ast) {
-    return ast->type == AST_LIST ? vec_size(ast->children) : 0;
-}
-
-static ast_t *ast_get_child(ast_t *ast, size_t i) {
-    if (!ast || i >= ast_child_count(ast))
-        return NULL;
-    return vec_get(ast->children, i);
-}
-
-static void print_ast(ast_t *ast) {
-    if (ast->type == AST_ATOM) {
-        fputs(ast->tok->word, stdout);
-    } else if (ast->type == AST_NULL) {
-        fputs("()", stdout);
-    } else { // this AST is a non-empty list
-        putchar('(');
-        const size_t cnt = ast_child_count(ast);
-        for (size_t i = 0; i < cnt; ++i) {
-            ast_t *child = ast_get_child(ast, i);
-            print_ast(child);
-            if (i + 1 < cnt) putchar(' ');
-        }
-        putchar(')');
-    }
-}
-
 // parser ----------------------------------------------------------------------
 
-static vec_t *toks; // tokens to parse
-static size_t cnt;  // number of tokens to parse
+static tok_t _tok_quote = { .type = TOK_QUOTE, .word = "quote" };
+static sexp_t *sexp_quote =
+    &(sexp_t){ .atom = &_tok_quote, .list = NULL };
+
+static vec_t *toks; // vector of tokens to parse
+static size_t cnt;  // size of vector of tokens
 
 static tok_t *tok; // current token being parsed
-static size_t pos; // index of current token in toks
+static size_t pos; // index of current token
 
 static void parse_error(void) {
     error("parse error");
 }
 
-static void next(void) {
-    tok = (pos < cnt) ? vec_get(toks, pos) : NULL;
-    ++pos;
+static void next_token(void) {
+    tok = (pos < cnt) ? vec_get(toks, pos++) : NULL;
 }
 
-static void match(tok_type_t type) {
-    if (tok->type == type) next();
+static void match_type(tok_type_t type) {
+    if (tok->type == type) next_token();
     else parse_error();
 }
 
-static ast_t *sexp(ast_t *ast);
+static sexp_t *parse_atom(sexp_t *sexp) {
+    if (!tok) parse_error();
 
-static ast_t *atom(ast_t *ast) {
-    if (!tok || !tok_is_atom(tok))
-        parse_error();
+    if (!sexp) sexp = make_sexp(tok, NULL);
+    else sexp->atom = tok;
 
-    ast->type = AST_ATOM;
-    ast_set_tok(ast, tok);
-
-    match(tok->type);
-    return ast;
+    next_token();
+    return sexp;
 }
 
-static ast_t *quote(ast_t *ast) {
-    if (!tok || tok->type != TOK_QUOTE)
-        parse_error();
-    match(TOK_QUOTE);
+static sexp_t *parse_sexp(sexp_t *sexp);
 
-    if (!ast) ast = make_ast();
-    ast->type = AST_LIST;
-    ast_add_child(ast, ast_quote);
-    ast_add_child(ast, sexp(NULL));
+static sexp_t *parse_quote(sexp_t *sexp) {
+    if (!tok) parse_error();
 
-    return ast;
+    if (!sexp) sexp = make_sexp(NULL, NULL);
+    sexp_cons(parse_sexp(NULL), sexp);
+    sexp_cons(sexp_quote, sexp);
+
+    return sexp;
 }
 
-static size_t rest(ast_t *ast, size_t cnt) {
+static sexp_t *parse_rest(sexp_t *sexp) {
     if (!tok) parse_error();
 
     const tok_type_t t = tok->type;
     if (tok_type_is_atom(t) || t == TOK_QUOTE || t == TOK_OPEN) {
-        ast_add_child(ast, sexp(NULL));
-        return rest(ast, cnt + 1);
+        sexp_cons(parse_sexp(NULL), sexp);
+        return parse_rest(sexp);
     } else if (t == TOK_CLOSE) {
-        return cnt;
+        return sexp;
     } else {
         parse_error();
-        return 0;
+        return sexp;
     }
 }
 
-static ast_t *sexp(ast_t *ast) {
+static sexp_t *parse_sexp(sexp_t *sexp) {
     if (!tok) parse_error();
+    if (!sexp) sexp = make_sexp(NULL, NULL);
 
-    if (!ast) ast = make_ast();
-    if (tok_is_atom(tok)) {
-        return atom(ast);
-    } else if (tok->type == TOK_QUOTE) {
-        return quote(ast);
-    } else if (tok->type == TOK_OPEN) {
-        match(TOK_OPEN);
-        size_t cnt = rest(ast, 0);
-        match(TOK_CLOSE);
-        ast->type = (cnt > 0) ? AST_LIST : AST_NULL;
-        return ast;
+    if (tok_type_is_atom(tok->type)) {
+        return parse_atom(sexp);
     } else {
-        parse_error();
-        return NULL;
+        switch (tok->type) {
+        case TOK_QUOTE:
+            match_type(TOK_QUOTE);
+            return parse_quote(sexp);
+        case TOK_OPEN:
+            match_type(TOK_OPEN);
+            parse_rest(sexp);
+            match_type(TOK_CLOSE);
+            return sexp_reverse(sexp);
+        default:
+            parse_error();
+            return sexp;
+        }
     }
 }
 
-static ast_t *parse_sexp(vec_t *sexp_toks) {
+static sexp_t *parse(vec_t *sexp_toks) {
     toks = sexp_toks;
     cnt = vec_size(toks);
 
     pos = 0;
-    next();
+    next_token();
 
-    return sexp(NULL);
+    return parse_sexp(NULL);
 }
 
 // reader ----------------------------------------------------------------------
@@ -253,13 +186,17 @@ static ast_t *parse_sexp(vec_t *sexp_toks) {
 void crow_read(FILE *file) {
     vec_t *words = make_vec(1);
     //read_sexp(stdin, words);
+    //read_sexp_str("test", words);
+    //read_sexp_str("'", words);
+    //read_sexp_str("''test", words);
+    //read_sexp_str("'(1 2 3)", words);
     read_sexp_str("(test 'foo '() (foo '(bar 'baz)))", words);
 
     vec_t *toks = make_vec(1);
     for (size_t i = 0; i < vec_size(words); ++i)
         vec_push(toks, lex_word(vec_get(words, i)));
 
-    ast_t *ast = parse_sexp(toks);
-    print_ast(ast);
+    sexp_t *sexp = parse(toks);
+    print_sexp(sexp);
     putchar('\n');
 }
