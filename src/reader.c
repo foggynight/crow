@@ -8,6 +8,7 @@
 #include "error.h"
 #include "global.h"
 #include "limit.h"
+#include "token.h"
 #include "vector.h"
 
 // input -----------------------------------------------------------------------
@@ -70,43 +71,6 @@ static size_t read_sexp_str(const char *str, vec_t *words) {
     const size_t ret = read_sexp(NULL, &copy, false, words);
     free(start);
     return ret;
-}
-
-// token -----------------------------------------------------------------------
-
-typedef enum tok_type {
-    TOK_SYMBOL, TOK_NUMBER, TOK_BOOL, TOK_CHARACTER, TOK_STRING,
-    TOK_QUOTE, TOK_OPEN, TOK_CLOSE
-} tok_type_t;
-
-typedef struct tok {
-    tok_type_t type;
-    char *word;
-} tok_t;
-
-static tok_t *make_tok(tok_type_t type, char *word) {
-    tok_t *tok = malloc(sizeof *tok);
-    if (!tok) error("make_tok: malloc failed");
-    tok->type = type;
-    tok->word = word;
-    return tok;
-}
-
-static void dest_tok(tok_t *tok) {
-    free(tok->word);
-    free(tok);
-}
-
-static bool tok_type_is_atom(tok_type_t type) {
-    return type == TOK_SYMBOL
-        || type == TOK_NUMBER
-        || type == TOK_BOOL
-        || type == TOK_CHARACTER
-        || type == TOK_STRING;
-}
-
-static bool tok_is_atom(tok_t *tok) {
-    return tok ? tok_type_is_atom(tok->type) : false;
 }
 
 // lexer -----------------------------------------------------------------------
