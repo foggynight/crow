@@ -8,8 +8,10 @@
 
 int main(void) {
     for (;;) {
+        fputs("> ", stdout);
+
         sexp_t *sexp = crow_read(stdin);
-        if (!sexp) break;
+        if (!sexp) { putchar('\n'); break; }
 
         print_sexp(sexp);
         putchar('\n');
