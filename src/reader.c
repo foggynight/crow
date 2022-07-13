@@ -86,10 +86,6 @@ static tok_t *lex_word(char *word) {
 
 // parser ----------------------------------------------------------------------
 
-static tok_t _tok_quote = { .type = TOK_QUOTE, .word = "quote" };
-static sexp_t *sexp_quote =
-    &(sexp_t){ .atom = &_tok_quote, .list = NULL };
-
 static vec_t *toks; // vector of tokens to parse
 static size_t cnt;  // size of vector of tokens
 
@@ -112,7 +108,7 @@ static void match_type(tok_type_t type) {
 static sexp_t *parse_atom(sexp_t *sexp) {
     if (!tok) parse_error();
 
-    if (!sexp) sexp = make_sexp(tok, NULL);
+    if (!sexp) sexp = make_sexp_atom(tok);
     else sexp->atom = tok;
 
     next_token();
@@ -124,7 +120,7 @@ static sexp_t *parse_sexp(sexp_t *sexp);
 static sexp_t *parse_quote(sexp_t *sexp) {
     if (!tok) parse_error();
 
-    if (!sexp) sexp = make_sexp(NULL, NULL);
+    if (!sexp) sexp = sexp_list(sexp_quote, NULL);
     sexp_cons(parse_sexp(NULL), sexp);
     sexp_cons(sexp_quote, sexp);
 
@@ -173,9 +169,7 @@ static sexp_t *parse(vec_t *sexp_toks) {
     toks = sexp_toks;
     cnt = vec_size(toks);
 
-    if (cnt == 0) {
-        return NULL;
-    }
+    if (cnt == 0) return NULL;
 
     pos = 0;
     next_token();

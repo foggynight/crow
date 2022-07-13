@@ -5,7 +5,7 @@
 
 typedef enum tok_type {
     TOK_SYMBOL, TOK_NUMBER, TOK_BOOL, TOK_CHARACTER, TOK_STRING,
-    TOK_QUOTE, TOK_OPEN, TOK_CLOSE
+    TOK_NULL, TOK_OPEN, TOK_CLOSE, TOK_QUOTE
 } tok_type_t;
 
 typedef struct tok {

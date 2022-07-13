@@ -5,32 +5,26 @@
 
 #include "token.h"
 
-typedef struct cons {
-    struct sexp *car;
-    struct cons *cdr;
-} cons_t;
+typedef enum sexp_type {
+    SEXP_NULL, SEXP_ATOM, SEXP_CONS
+} sexp_type_t;
 
 typedef struct sexp {
-    tok_t *atom;       // token if atom else NULL
-    struct cons *list; // cons cell if list else NULL
+    sexp_type_t type;       // type of sexp, atom or cons
+    tok_t *atom;            // token if type is atom
+    struct sexp *car, *cdr; // sexps if type is cons
 } sexp_t;
 
-// cons ------------------------------------------------------------------------
+extern sexp_t *sexp_null;
+extern sexp_t *sexp_quote;
 
-cons_t *make_cons(sexp_t *car, cons_t *cdr);
-void dest_cons(cons_t *cons);
-
-sexp_t *cons_car(cons_t *cons);
-cons_t *cons_cdr(cons_t *cons);
-cons_t *cons_cons(sexp_t *car, cons_t *cdr);
-
-// sexp ------------------------------------------------------------------------
-
-sexp_t *make_sexp(tok_t *atom, cons_t *list);
+sexp_t *make_sexp(sexp_type_t type, tok_t *atom, sexp_t *car, sexp_t *cdr);
+sexp_t *make_sexp_atom(tok_t *atom);
+sexp_t *make_sexp_cons(sexp_t *car, sexp_t *cdr);
 void dest_sexp(sexp_t *sexp);
 
 bool sexp_is_atom(const sexp_t *sexp);
-bool sexp_is_list(const sexp_t *sexp);
+bool sexp_is_cons(const sexp_t *sexp);
 
 sexp_t *sexp_cons(sexp_t *car, sexp_t *cdr);
 sexp_t *sexp_reverse(sexp_t *sexp);
