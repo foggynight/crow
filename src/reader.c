@@ -96,71 +96,62 @@ static void parse_error(void) {
     error("parse error");
 }
 
-static void next_token(void) {
+static void next(void) {
     tok = (pos < cnt) ? vec_get(toks, pos++) : NULL;
 }
 
-static void match_type(tok_type_t type) {
-    if (tok->type == type) next_token();
+static void match(tok_type_t type) {
+    if (tok->type == type) next();
     else parse_error();
 }
 
-static sexp_t *parse_atom(sexp_t *sexp) {
+static sexp_t *parse_atom(void) {
     if (!tok) parse_error();
-
-    if (!sexp) sexp = make_sexp_atom(tok);
-    else sexp->atom = tok;
-
-    next_token();
+    sexp_t *sexp = make_sexp_atom(tok);
+    next();
     return sexp;
 }
 
-static sexp_t *parse_sexp(sexp_t *sexp);
+static sexp_t *parse_sexp(void);
 
-static sexp_t *parse_quote(sexp_t *sexp) {
+static sexp_t *parse_quote(void) {
     if (!tok) parse_error();
-
-    if (!sexp) sexp = sexp_list(sexp_quote, NULL);
-    sexp_cons(parse_sexp(NULL), sexp);
-    sexp_cons(sexp_quote, sexp);
-
-    return sexp;
+    return sexp_cons(sexp_quote, sexp_cons(parse_sexp(), sexp_null));
 }
 
-static sexp_t *parse_rest(sexp_t *sexp) {
+static sexp_t *parse_rest(void) {
     if (!tok) parse_error();
 
     const tok_type_t t = tok->type;
     if (tok_type_is_atom(t) || t == TOK_QUOTE || t == TOK_OPEN) {
-        sexp_cons(parse_sexp(NULL), sexp);
-        return parse_rest(sexp);
+        sexp_t *sexp = parse_sexp();
+        return sexp_cons(sexp, parse_rest());
     } else if (t == TOK_CLOSE) {
-        return sexp;
+        return sexp_null;
     } else {
         parse_error();
-        return sexp;
+        return NULL;
     }
 }
 
-static sexp_t *parse_sexp(sexp_t *sexp) {
+static sexp_t *parse_sexp(void) {
     if (!tok) parse_error();
-    if (!sexp) sexp = make_sexp(NULL, NULL);
 
     if (tok_type_is_atom(tok->type)) {
-        return parse_atom(sexp);
+        return parse_atom();
     } else {
         switch (tok->type) {
         case TOK_QUOTE:
-            match_type(TOK_QUOTE);
-            return parse_quote(sexp);
+            match(TOK_QUOTE);
+            return parse_quote();
         case TOK_OPEN:
-            match_type(TOK_OPEN);
-            parse_rest(sexp);
-            match_type(TOK_CLOSE);
-            return sexp_reverse(sexp);
+            match(TOK_OPEN);
+            sexp_t *sexp = parse_rest();
+            match(TOK_CLOSE);
+            return sexp;
         default:
             parse_error();
-            return sexp;
+            return NULL;
         }
     }
 }
@@ -172,9 +163,9 @@ static sexp_t *parse(vec_t *sexp_toks) {
     if (cnt == 0) return NULL;
 
     pos = 0;
-    next_token();
+    next();
 
-    return parse_sexp(NULL);
+    return parse_sexp();
 }
 
 // reader ----------------------------------------------------------------------

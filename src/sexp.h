@@ -10,8 +10,8 @@ typedef enum sexp_type {
 } sexp_type_t;
 
 typedef struct sexp {
-    sexp_type_t type;       // type of sexp, atom or cons
-    tok_t *atom;            // token if type is atom
+    sexp_type_t type;       // type of sexp: null, atom, or cons
+    tok_t *atom;            // token if type is atom or null
     struct sexp *car, *cdr; // sexps if type is cons
 } sexp_t;
 
@@ -19,10 +19,12 @@ extern sexp_t *sexp_null;
 extern sexp_t *sexp_quote;
 
 sexp_t *make_sexp(sexp_type_t type, tok_t *atom, sexp_t *car, sexp_t *cdr);
+sexp_t *make_sexp_null(void);
 sexp_t *make_sexp_atom(tok_t *atom);
 sexp_t *make_sexp_cons(sexp_t *car, sexp_t *cdr);
 void dest_sexp(sexp_t *sexp);
 
+bool sexp_is_null(const sexp_t *sexp);
 bool sexp_is_atom(const sexp_t *sexp);
 bool sexp_is_cons(const sexp_t *sexp);
 

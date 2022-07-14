@@ -15,7 +15,5 @@ int main(void) {
 
         print_sexp(sexp);
         putchar('\n');
-
-        dest_sexp(sexp);
     }
 }

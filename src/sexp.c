@@ -14,17 +14,18 @@ sexp_t *sexp_null  = &(sexp_t){ SEXP_NULL, tok_null, NULL, NULL };
 sexp_t *sexp_quote = &(sexp_t){ SEXP_ATOM, tok_quote, NULL, NULL };
 
 sexp_t *make_sexp(sexp_type_t type, tok_t *atom, sexp_t *car, sexp_t *cdr) {
-    sexp_t *ret = calloc(1, sizeof(sexp_t));
-    if (!ret) error("make_sexp: failed to allocate sexp_t");
+    sexp_t *sexp = calloc(1, sizeof(sexp_t));
+    if (!sexp) error("make_sexp: failed to allocate sexp_t");
 
+    sexp->type = type;
     switch (type) {
     case SEXP_NULL: break;
-    case SEXP_ATOM: ret->atom = atom; break;
-    case SEXP_CONS: ret->car = car; ret->cdr = cdr; break;
+    case SEXP_ATOM: sexp->atom = atom; break;
+    case SEXP_CONS: sexp->car = car; sexp->cdr = cdr; break;
     default: error("make_sexp: invalid type argument: %d", type);
     }
 
-    return ret;
+    return sexp;
 }
 
 sexp_t *make_sexp_null(void) {
@@ -49,6 +50,10 @@ void dest_sexp(sexp_t *sexp) {
         }
         free(sexp);
     }
+}
+
+bool sexp_is_null(const sexp_t *sexp) {
+    return sexp->type == SEXP_NULL;
 }
 
 bool sexp_is_atom(const sexp_t *sexp) {
@@ -79,9 +84,9 @@ void print_sexp(sexp_t *sexp) {
         fputs(sexp->atom->word, stdout);
     } else {
         putchar('(');
-        for (sexp_t *walk = sexp; walk != NULL; walk = walk->cdr) {
+        for (sexp_t *walk = sexp; !sexp_is_null(walk); walk = walk->cdr) {
             print_sexp(walk->car);
-            if (walk->cdr) putchar(' ');
+            if (!sexp_is_null(walk->cdr)) putchar(' ');
         }
         putchar(')');
     }
