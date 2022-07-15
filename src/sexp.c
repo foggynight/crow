@@ -1,8 +1,10 @@
 #include "sexp.h"
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "error.h"
 #include "token.h"
@@ -64,8 +66,22 @@ bool sexp_is_cons(const sexp_t *sexp) {
     return sexp->type == SEXP_CONS;
 }
 
+bool sexp_is_eq(const sexp_t *sexp1, const sexp_t *sexp2) {
+    assert(sexp_is_atom(sexp1)); assert(sexp_is_atom(sexp2));
+    return strcmp(sexp1->atom->word, sexp2->atom->word) == 0;
+}
+
 sexp_t *sexp_cons(sexp_t *car, sexp_t *cdr) {
     return make_sexp_cons(car, cdr);
+}
+
+sexp_t *sexp_assq(sexp_t *alst, sexp_t *symbol) {
+    for (sexp_t *lst = alst; !sexp_is_null(lst); lst = lst->cdr) {
+        const sexp_t *pair = lst->car;
+        if (sexp_is_eq(pair->car, symbol))
+            return pair;
+    }
+    return sexp_null;
 }
 
 sexp_t *sexp_reverse(sexp_t *sexp) {
