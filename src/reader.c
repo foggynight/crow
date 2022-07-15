@@ -6,8 +6,9 @@
 
 #include "error.h"
 #include "global.h"
-#include "limit.h"
+#include "limits.h"
 #include "sexp.h"
+#include "string.h"
 #include "token.h"
 #include "vector.h"
 
@@ -79,7 +80,9 @@ static tok_t *lex_word(char *word) {
     case '\'': type = TOK_QUOTE; break;
     case '(':  type = TOK_OPEN; break;
     case ')':  type = TOK_CLOSE; break;
-    default:   type = TOK_SYMBOL; // temporary
+    default:
+        if (str_is_numeric(word)) type = TOK_NUMBER;
+        else type = TOK_SYMBOL;
     }
     return make_tok(type, word);
 }
