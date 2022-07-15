@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#include "error.h"
 #include "sexp.h"
 
 env_t *make_env(void) {
@@ -26,7 +27,7 @@ env_t *env_insert(env_t *env, sexp_t *pair) {
     return env;
 }
 
-sexp_t *env_fetch(env_t *env, sexp_t *symbol) {
+sexp_t *env_fetch(const env_t *env, const sexp_t *symbol) {
     for (sexp_t *lst = env->frames; !sexp_is_null(lst); lst = lst->cdr) {
         sexp_t *pair = sexp_assq(env->frames->car, symbol);
         if (!sexp_is_null(pair)) return pair;
@@ -34,7 +35,7 @@ sexp_t *env_fetch(env_t *env, sexp_t *symbol) {
     return sexp_null;
 }
 
-sexp_t *env_lookup(env_t *env, sexp_t *symbol) {
-    const sexp_t *pair = env_fetch(env, symbol);
+sexp_t *env_lookup(const env_t *env, const sexp_t *symbol) {
+    sexp_t *pair = env_fetch(env, symbol);
     return sexp_is_null(pair) ? sexp_null : pair->cdr;
 }

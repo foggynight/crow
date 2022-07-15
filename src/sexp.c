@@ -12,7 +12,7 @@
 #define tok_null  &(tok_t){ TOK_NULL,  "()" }
 #define tok_quote &(tok_t){ TOK_QUOTE, "quote" }
 
-sexp_t *sexp_null  = &(sexp_t){ SEXP_NULL, tok_null, NULL, NULL };
+sexp_t *sexp_null  = &(sexp_t){ SEXP_NULL, tok_null,  NULL, NULL };
 sexp_t *sexp_quote = &(sexp_t){ SEXP_ATOM, tok_quote, NULL, NULL };
 
 sexp_t *make_sexp(sexp_type_t type, tok_t *atom, sexp_t *car, sexp_t *cdr) {
@@ -75,9 +75,9 @@ sexp_t *sexp_cons(sexp_t *car, sexp_t *cdr) {
     return make_sexp_cons(car, cdr);
 }
 
-sexp_t *sexp_assq(sexp_t *alst, sexp_t *symbol) {
+sexp_t *sexp_assq(sexp_t *alst, const sexp_t *symbol) {
     for (sexp_t *lst = alst; !sexp_is_null(lst); lst = lst->cdr) {
-        const sexp_t *pair = lst->car;
+        sexp_t *pair = lst->car;
         if (sexp_is_eq(pair->car, symbol))
             return pair;
     }

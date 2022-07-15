@@ -30,7 +30,7 @@ bool sexp_is_cons(const sexp_t *sexp);
 bool sexp_is_eq(const sexp_t *sexp1, const sexp_t *sexp2);
 
 sexp_t *sexp_cons(sexp_t *car, sexp_t *cdr);
-sexp_t *sexp_assq(sexp_t *alst, sexp_t *symbol);
+sexp_t *sexp_assq(sexp_t *alst, const sexp_t *symbol);
 sexp_t *sexp_reverse(sexp_t *sexp);
 
 void print_sexp(sexp_t *sexp);
