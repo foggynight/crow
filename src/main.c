@@ -7,13 +7,9 @@
 #define GLOBAL_H_DEF
 #include "global.h"
 
-void display_banner(void) {
-    fputs("CROW v0.0.0\n(C) 2022 Robert Coffey\n", stdout);
-}
-
-void display_prompt(void) {
-    fputs("> ", stdout);
-}
+void display_banner(void) { fputs("CROW v0.0.0\n"
+                                  "(C) 2022 Robert Coffey\n", stdout); }
+void display_prompt(void) { fputs("> ", stdout); }
 
 void crow_repl(bool prompt) {
 recur:
