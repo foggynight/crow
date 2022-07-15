@@ -13,7 +13,6 @@ typedef struct env {
 } env_t;
 
 env_t *make_env(void);     // Make a new environment with a single empty frame.
-void dest_env(env_t *env); // Destroy env and the frames it contains.
 
 // Add an empty frame on top of env.
 env_t *env_expand(env_t *env);

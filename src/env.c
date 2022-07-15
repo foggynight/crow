@@ -13,8 +13,6 @@ env_t *make_env(void) {
     return env;
 }
 
-void dest_env(env_t *env) {}
-
 env_t *env_expand(env_t *env) {
     assert(env);
     env->frames = sexp_cons(sexp_null, env->frames);
