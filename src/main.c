@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdio.h>
 
 #include "reader.h"
@@ -6,14 +7,28 @@
 #define GLOBAL_H_DEF
 #include "global.h"
 
-int main(void) {
-    for (;;) {
-        fputs("> ", stdout);
+void display_banner(void) {
+    fputs("CROW v0.0.0\n(C) 2022 Robert Coffey\n", stdout);
+}
 
-        sexp_t *sexp = crow_read(stdin);
-        if (!sexp) { putchar('\n'); break; }
+void display_prompt(void) {
+    fputs("> ", stdout);
+}
 
-        print_sexp(sexp);
-        putchar('\n');
-    }
+void crow_repl(bool prompt) {
+recur:
+    if (prompt) display_prompt();
+
+    sexp_t *sexp = crow_read(stdin);
+    if (!sexp) { putchar('\n'); return; }
+
+    print_sexp(sexp);
+    putchar('\n');
+
+    goto recur;
+}
+
+int main(int argc, char **argv) {
+    if (argc == 1) display_banner();
+    crow_repl(true);
 }
