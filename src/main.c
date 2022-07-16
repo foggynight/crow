@@ -8,7 +8,9 @@
 #define GLOBAL_H_DEF
 #include "global.h"
 
-static bool flag_display_prompt = true;
+static struct {
+    bool display_prompt;
+} config = { true };
 
 static void display_banner(void) { fputs("CROW v0.0.0\n"
                                          "(C) 2022 Robert Coffey\n", stdout); }
@@ -16,7 +18,7 @@ static void display_prompt(void) { fputs("> ", stdout); }
 
 static void crow_repl(env_t *env) {
 recur:
-    if (flag_display_prompt) display_prompt();
+    if (config.display_prompt) display_prompt();
 
     sexp_t *sexp = crow_read(stdin);
     if (!sexp) { putchar('\n'); return; }
