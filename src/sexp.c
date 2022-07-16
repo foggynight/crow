@@ -12,8 +12,8 @@
 #define tok_null  &(tok_t){ TOK_NULL,  "()" }
 #define tok_quote &(tok_t){ TOK_QUOTE, "quote" }
 
-sexp_t *sexp_null  = &(sexp_t){ SEXP_NULL, tok_null,  NULL, NULL };
-sexp_t *sexp_quote = &(sexp_t){ SEXP_ATOM, tok_quote, NULL, NULL };
+sexp_t *sexp_null  = &(sexp_t){ SEXP_NULL, tok_null  };
+sexp_t *sexp_quote = &(sexp_t){ SEXP_ATOM, tok_quote };
 
 sexp_t *make_sexp(sexp_type_t type, tok_t *atom, sexp_t *car, sexp_t *cdr) {
     sexp_t *sexp = calloc(1, sizeof(sexp_t));
@@ -21,9 +21,8 @@ sexp_t *make_sexp(sexp_type_t type, tok_t *atom, sexp_t *car, sexp_t *cdr) {
 
     sexp->type = type;
     switch (type) {
-    case SEXP_NULL: break;
-    case SEXP_ATOM: sexp->atom = atom; break;
-    case SEXP_CONS: sexp->car = car; sexp->cdr = cdr; break;
+    case SEXP_NULL: case SEXP_ATOM: sexp_atom_set(sexp, atom); break;
+    case SEXP_CONS: sexp_car_set(sexp, car); sexp_cdr_set(sexp, cdr); break;
     default: error("make_sexp: invalid type argument: %d", type);
     }
 
@@ -31,7 +30,7 @@ sexp_t *make_sexp(sexp_type_t type, tok_t *atom, sexp_t *car, sexp_t *cdr) {
 }
 
 sexp_t *make_sexp_null(void) {
-    return make_sexp(SEXP_NULL, tok_quote, NULL, NULL);
+    return make_sexp(SEXP_NULL, tok_null, NULL, NULL);
 }
 
 sexp_t *make_sexp_atom(tok_t *atom) {
@@ -70,6 +69,39 @@ bool sexp_is_eq(const sexp_t *sexp1, const sexp_t *sexp2) {
     assert(sexp_is_atom(sexp1)); assert(sexp_is_atom(sexp2));
     return strcmp(sexp1->atom->word, sexp2->atom->word) == 0;
 }
+
+tok_t *sexp_atom(const sexp_t *s) {
+    return (s && s->type == SEXP_ATOM) ? sexp->atom : NULL;
+}
+
+sexp_t *sexp_atom_set(sexp_t *s, tok_t *atom) {
+    if (!s || !atom || s->type != ATOM) return NULL;
+    s->atom = atom;
+    return s;
+}
+
+#define SEXP_CXR(NAME, FIELD)                   \
+    sexp_t *NAME(sexp_t *s) {                   \
+        if (!s || s->type != SEXP_CONS)         \
+            return NULL;                        \
+        return s->cons->FIELD;                  \
+    }                                           \
+
+#define SEXP_CXR_SET(NAME, FIELD)               \
+    sexp_t *NAME(sexp_t *s, sexp_t *e) {        \
+        if (!s || !e || s->type != SEXP_CONS)   \
+            return NULL;                        \
+        s->cons->FIELD = e;                     \
+        return s;                               \
+    }                                           \
+
+SEXP_CXR(sexp_car, car)
+SEXP_CXR(sexp_cdr, cdr)
+SEXP_CXR_SET(sexp_car_set, car)
+SEXP_CXR_SET(sexp_cdr_set, cdr)
+
+#undef SEXP_CXR
+#undef SEXP_CXR_SET
 
 sexp_t *sexp_cons(sexp_t *car, sexp_t *cdr) {
     return make_sexp_cons(car, cdr);
