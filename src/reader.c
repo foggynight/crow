@@ -110,7 +110,14 @@ static void match(tok_type_t type) {
 
 static sexp_t *parse_atom(void) {
     if (!tok) parse_error();
-    sexp_t *sexp = make_sexp_atom(tok);
+
+    sexp_t *sexp;
+    switch (tok->type) {
+    case TOK_SYMBOL: sexp = make_sexp_symbol(tok); break;
+    case TOK_NUMBER: sexp = make_sexp_number(tok); break;
+    default: parse_error();
+    }
+
     next();
     return sexp;
 }

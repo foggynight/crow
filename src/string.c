@@ -7,11 +7,9 @@
 #include "error.h"
 
 bool str_is_numeric(const char *str) {
-    for (size_t i = 0; str[i]; ++i) {
-        if (!isdigit(str[i]))
-            return false;
-    }
-    return true;
+    char *endptr;
+    long val = strtol(str, &endptr, 10);
+    return *endptr == '\0';
 }
 
 char *str_sub(const char *str, size_t start, size_t end) {
