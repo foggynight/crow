@@ -21,13 +21,13 @@ env_t *env_expand(env_t *env) {
 
 env_t *env_insert(env_t *env, sexp_t *pair) {
     assert(env); assert(!sexp_is_null(env->frames));
-    env->frames->car = sexp_cons(pair, env->frames->car);
+    sexp_car_set(env->frames, sexp_cons(pair, sexp_car(env->frames)));
     return env;
 }
 
 sexp_t *env_fetch(const env_t *env, const sexp_t *symbol) {
-    for (sexp_t *lst = env->frames; !sexp_is_null(lst); lst = lst->cdr) {
-        sexp_t *pair = sexp_assq(env->frames->car, symbol);
+    for (sexp_t *lst = env->frames; !sexp_is_null(lst); lst = sexp_cdr(lst)) {
+        sexp_t *pair = sexp_assq(sexp_car(env->frames), symbol);
         if (!sexp_is_null(pair)) return pair;
     }
     return sexp_null;
@@ -35,5 +35,5 @@ sexp_t *env_fetch(const env_t *env, const sexp_t *symbol) {
 
 sexp_t *env_lookup(const env_t *env, const sexp_t *symbol) {
     sexp_t *pair = env_fetch(env, symbol);
-    return sexp_is_null(pair) ? sexp_null : pair->cdr;
+    return sexp_is_null(pair) ? sexp_null : sexp_cdr(pair);
 }
