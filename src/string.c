@@ -8,7 +8,7 @@
 
 bool str_is_numeric(const char *str) {
     char *endptr;
-    long val = strtol(str, &endptr, 10);
+    strtol(str, &endptr, 10);
     return *endptr == '\0';
 }
 
