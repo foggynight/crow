@@ -3,15 +3,17 @@
 
 #include <stdbool.h>
 
-typedef enum tok_type {
+#include "types.h"
+
+enum tok_type {
     TOK_SYMBOL, TOK_NUMBER, TOK_BOOL, TOK_CHARACTER, TOK_STRING,
     TOK_NULL, TOK_OPEN, TOK_CLOSE, TOK_QUOTE
-} tok_type_t;
+};
 
-typedef struct tok {
+struct tok {
     tok_type_t type;
     char *word;
-} tok_t;
+};
 
 tok_t *make_tok(tok_type_t type, char *word);
 void dest_tok(tok_t *tok);

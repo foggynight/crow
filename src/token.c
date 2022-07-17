@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include "error.h"
+#include "types.h"
 
 tok_t *make_tok(tok_type_t type, char *word) {
     tok_t *tok = malloc(sizeof *tok);

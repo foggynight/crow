@@ -6,6 +6,7 @@
 #include <stdio.h>
 
 #include "sexp.h"
+#include "types.h"
 
 sexp_t *crow_read(FILE *file);
 

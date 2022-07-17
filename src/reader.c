@@ -10,6 +10,7 @@
 #include "sexp.h"
 #include "string.h"
 #include "token.h"
+#include "types.h"
 #include "vector.h"
 
 // input -----------------------------------------------------------------------

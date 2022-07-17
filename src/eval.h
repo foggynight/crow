@@ -3,9 +3,9 @@
 #ifndef EVAL_H
 #define EVAL_H
 
-#include "env.h"
 #include "sexp.h"
+#include "types.h"
 
-sexp_t *crow_eval(sexp_t *sexp, env_t *env);
+sexp_t *crow_eval(sexp_t *sexp, sexp_t *env);
 
 #endif // EVAL_H

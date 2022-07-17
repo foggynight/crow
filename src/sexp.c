@@ -8,12 +8,15 @@
 
 #include "error.h"
 #include "token.h"
+#include "types.h"
 
 #define _tok_null  &(tok_t){ TOK_NULL,  "()" }
 #define _tok_quote &(tok_t){ TOK_QUOTE, "quote" }
+#define _tok_begin &(tok_t){ TOK_QUOTE, "begin" }
 
 sexp_t *sexp_null  = &(sexp_t){ SEXP_NULL,   { _tok_null  } };
 sexp_t *sexp_quote = &(sexp_t){ SEXP_SYMBOL, { _tok_quote } };
+sexp_t *sexp_begin = &(sexp_t){ SEXP_SYMBOL, { _tok_begin } };
 
 num_t *make_number(const tok_t *token) {
     char *endptr;
@@ -95,6 +98,13 @@ void dest_sexp(sexp_t *sexp) {
     }
 }
 
+sexp_t *sexp_closure(sexp_t *sexp, sexp_t *env) {
+    assert(sexp); assert(env);
+    return make_closure(sexp_car(sexp),
+                        sexp_cons(sexp_begin, sexp_cdr(sexp)),
+                        env);
+}
+
 sexp_type_t sexp_type(const sexp_t *sexp) {
     return sexp->type;
 }
@@ -113,6 +123,14 @@ bool sexp_is_number(const sexp_t *sexp) {
 
 bool sexp_is_cons(const sexp_t *sexp) {
     return sexp->type == SEXP_CONS;
+}
+
+bool sexp_is_primitive(const sexp_t *sexp) {
+
+}
+
+bool sexp_is_closure(const sexp_t *sexp) {
+
 }
 
 bool sexp_is_eq(const sexp_t *sexp1, const sexp_t *sexp2) {
@@ -140,14 +158,13 @@ sexp_t *sexp_number_set(sexp_t *s, num_t *number) {
     return s;
 }
 
-#define SEXP_CXR(X)                             \
-    sexp_t *sexp_ ## X(const sexp_t *s) {       \
-        if (!s || s->type != SEXP_CONS)         \
-            return NULL;                        \
-        return s->cons->X;                      \
-    }                                           \
-
-#define SEXP_CXR_SET(X)                                 \
+#define SEXP_CXR(X)                                     \
+    sexp_t *sexp_ ## X(const sexp_t *s) {               \
+        if (!s || s->type != SEXP_CONS)                 \
+            return NULL;                                \
+        return s->cons->X;                              \
+    }                                                   \
+                                                        \
     sexp_t *sexp_ ## X ## _set(sexp_t *s, sexp_t *e) {  \
         if (!s || !e || s->type != SEXP_CONS)           \
             return NULL;                                \
@@ -155,13 +172,59 @@ sexp_t *sexp_number_set(sexp_t *s, num_t *number) {
         return s;                                       \
     }                                                   \
 
+#define SEXP_CXXR(X, ...)                           \
+    sexp_t *sexp_ ## X(const sexp_t *s) {           \
+        sexp_t *(*args[])(const sexp_t *s) =        \
+            { __VA_ARGS__ __VA_OPT__(,) NULL };     \
+        sexp_t *w = (*args[0])(s);                  \
+        for (size_t i = 1; args[i] != NULL; ++i) {  \
+            w = (*args[i])(w);                      \
+        }                                           \
+        return w;                                   \
+    }                                               \
+
+#define SEXP_CXXR_SET(X, SET, ...)                      \
+    sexp_t *sexp_ ## X ## _set(sexp_t *s, sexp_t *e) {  \
+        sexp_t *(*args[])(const sexp_t *s) =            \
+            { __VA_ARGS__ __VA_OPT__(,) NULL };         \
+        sexp_t *w = s;                                  \
+        for (size_t i = 0; args[i] != NULL; ++i) {      \
+            w = (*args[i])(w);                          \
+        }                                               \
+        SET(w, e);                                      \
+        return w;                                       \
+    }                                                   \
+
 SEXP_CXR(car)
 SEXP_CXR(cdr)
-SEXP_CXR_SET(car)
-SEXP_CXR_SET(cdr)
+SEXP_CXXR(caar, sexp_car, sexp_car)
+SEXP_CXXR(cadr, sexp_cdr, sexp_car)
+SEXP_CXXR(cdar, sexp_car, sexp_cdr)
+SEXP_CXXR(cddr, sexp_cdr, sexp_cdr)
+SEXP_CXXR(caaar, sexp_car, sexp_car, sexp_car)
+SEXP_CXXR(caadr, sexp_cdr, sexp_car, sexp_car)
+SEXP_CXXR(cadar, sexp_car, sexp_cdr, sexp_car)
+SEXP_CXXR(caddr, sexp_cdr, sexp_cdr, sexp_car)
+SEXP_CXXR(cdaar, sexp_car, sexp_car, sexp_cdr)
+SEXP_CXXR(cdadr, sexp_cdr, sexp_car, sexp_cdr)
+SEXP_CXXR(cddar, sexp_car, sexp_cdr, sexp_cdr)
+SEXP_CXXR(cdddr, sexp_cdr, sexp_cdr, sexp_cdr)
+SEXP_CXXR_SET(caar, sexp_car_set, sexp_car)
+SEXP_CXXR_SET(cadr, sexp_car_set, sexp_cdr)
+SEXP_CXXR_SET(cdar, sexp_cdr_set, sexp_car)
+SEXP_CXXR_SET(cddr, sexp_cdr_set, sexp_cdr)
+SEXP_CXXR_SET(caaar, sexp_car_set, sexp_car, sexp_car)
+SEXP_CXXR_SET(caadr, sexp_car_set, sexp_cdr, sexp_car)
+SEXP_CXXR_SET(cadar, sexp_car_set, sexp_car, sexp_cdr)
+SEXP_CXXR_SET(caddr, sexp_car_set, sexp_cdr, sexp_cdr)
+SEXP_CXXR_SET(cdaar, sexp_cdr_set, sexp_car, sexp_car)
+SEXP_CXXR_SET(cdadr, sexp_cdr_set, sexp_cdr, sexp_car)
+SEXP_CXXR_SET(cddar, sexp_cdr_set, sexp_car, sexp_cdr)
+SEXP_CXXR_SET(cdddr, sexp_cdr_set, sexp_cdr, sexp_cdr)
 
 #undef SEXP_CXR
-#undef SEXP_CXR_SET
+#undef SEXP_CXXR
+#undef SEXP_CXXR_SET
 
 sexp_t *sexp_cons(sexp_t *car, sexp_t *cdr) {
     return make_sexp_cons(car, cdr);
