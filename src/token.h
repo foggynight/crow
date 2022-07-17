@@ -15,6 +15,9 @@ typedef struct tok {
 
 tok_t *make_tok(tok_type_t type, char *word);
 void dest_tok(tok_t *tok);
+
+char *tok_word(tok_t *tok);
+
 bool tok_type_is_atom(tok_type_t type);
 bool tok_is_atom(tok_t *tok);
 

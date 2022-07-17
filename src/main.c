@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "env.h"
+#include "eval.h"
 #include "reader.h"
 #include "sexp.h"
 
@@ -23,13 +24,7 @@ recur:
     sexp_t *sexp = crow_read(stdin);
     if (!sexp) { putchar('\n'); return; }
 
-    sexp_t *datum = NULL;
-    if (sexp_is_atom(sexp))
-        datum = env_lookup(env, sexp);
-
-    if (datum) print_sexp(datum);
-    else print_sexp(sexp);
-
+    print_sexp(crow_eval(sexp, env));
     putchar('\n');
 
     goto recur;
@@ -40,12 +35,9 @@ int main(int argc, char **argv) {
 
     env_t *toplevel = make_env();
 
-    // TEMP
-    sexp_t *sexp_a = make_sexp_atom(make_tok(TOK_SYMBOL, "a"));
-    sexp_t *sexp_b = make_sexp_atom(make_tok(TOK_SYMBOL, "b"));
-    sexp_t *pair = sexp_cons(sexp_a, sexp_b);
-
-    env_insert(toplevel, pair);
+    sexp_t *sexp_a = make_sexp_symbol(make_tok(TOK_SYMBOL, "a"));
+    sexp_t *sexp_b = make_sexp_symbol(make_tok(TOK_SYMBOL, "b"));
+    env_insert(toplevel, sexp_cons(sexp_a, sexp_b));
 
     crow_repl(toplevel);
 }

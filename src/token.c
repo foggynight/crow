@@ -1,5 +1,6 @@
 #include "token.h"
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>
 
@@ -16,6 +17,11 @@ tok_t *make_tok(tok_type_t type, char *word) {
 void dest_tok(tok_t *tok) {
     free(tok->word);
     free(tok);
+}
+
+char *tok_word(tok_t *tok) {
+    assert(tok);
+    return tok->word;
 }
 
 bool tok_type_is_atom(tok_type_t type) {

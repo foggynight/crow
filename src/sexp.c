@@ -95,6 +95,10 @@ void dest_sexp(sexp_t *sexp) {
     }
 }
 
+sexp_type_t sexp_type(const sexp_t *sexp) {
+    return sexp->type;
+}
+
 bool sexp_is_null(const sexp_t *sexp) {
     return sexp->type == SEXP_NULL;
 }
@@ -137,7 +141,7 @@ sexp_t *sexp_number_set(sexp_t *s, num_t *number) {
 }
 
 #define SEXP_CXR(X)                             \
-    sexp_t *sexp_ ## X(sexp_t *s) {             \
+    sexp_t *sexp_ ## X(const sexp_t *s) {       \
         if (!s || s->type != SEXP_CONS)         \
             return NULL;                        \
         return s->cons->X;                      \
