@@ -31,6 +31,10 @@ sexp_t *crow_eval(sexp_t *sexp, sexp_t *env) {
     return NULL;
 }
 
+static sexp_t *primitive_apply(sexp_t *proc, sexp_t *args) {
+    return NULL;
+}
+
 static sexp_t *crow_apply(sexp_t *proc, sexp_t *args) {
     if (sexp_is_primitive(proc)) {
         return primitive_apply(proc, args);

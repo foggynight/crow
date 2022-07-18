@@ -100,13 +100,17 @@ void dest_sexp(sexp_t *sexp) {
 
 sexp_t *sexp_closure(sexp_t *sexp, sexp_t *env) {
     assert(sexp); assert(env);
-    return make_closure(sexp_car(sexp),
-                        sexp_cons(sexp_begin, sexp_cdr(sexp)),
-                        env);
+    sexp_t *body = sexp_cons(sexp_begin, sexp_cdr(sexp));
+    return make_closure(sexp_car(sexp), body, env);
 }
 
 sexp_type_t sexp_type(const sexp_t *sexp) {
     return sexp->type;
+}
+
+sexp_t *sexp_type_set(sexp_t *sexp, sexp_type_t type) {
+    sexp->type = type;
+    return sexp;
 }
 
 bool sexp_is_null(const sexp_t *sexp) {
@@ -125,12 +129,12 @@ bool sexp_is_cons(const sexp_t *sexp) {
     return sexp->type == SEXP_CONS;
 }
 
-bool sexp_is_primitive(const sexp_t *sexp) {
-
+bool sexp_is_closure(const sexp_t *sexp) {
+    return sexp->type == SEXP_CLOSURE;
 }
 
-bool sexp_is_closure(const sexp_t *sexp) {
-
+bool sexp_is_primitive(const sexp_t *sexp) {
+    return sexp->type == SEXP_PRIMITIVE;
 }
 
 bool sexp_is_eq(const sexp_t *sexp1, const sexp_t *sexp2) {
@@ -195,32 +199,32 @@ sexp_t *sexp_number_set(sexp_t *s, num_t *number) {
         return w;                                       \
     }                                                   \
 
-SEXP_CXR(car)
-SEXP_CXR(cdr)
-SEXP_CXXR(caar, sexp_car, sexp_car)
-SEXP_CXXR(cadr, sexp_cdr, sexp_car)
-SEXP_CXXR(cdar, sexp_car, sexp_cdr)
-SEXP_CXXR(cddr, sexp_cdr, sexp_cdr)
-SEXP_CXXR(caaar, sexp_car, sexp_car, sexp_car)
-SEXP_CXXR(caadr, sexp_cdr, sexp_car, sexp_car)
-SEXP_CXXR(cadar, sexp_car, sexp_cdr, sexp_car)
-SEXP_CXXR(caddr, sexp_cdr, sexp_cdr, sexp_car)
-SEXP_CXXR(cdaar, sexp_car, sexp_car, sexp_cdr)
-SEXP_CXXR(cdadr, sexp_cdr, sexp_car, sexp_cdr)
-SEXP_CXXR(cddar, sexp_car, sexp_cdr, sexp_cdr)
-SEXP_CXXR(cdddr, sexp_cdr, sexp_cdr, sexp_cdr)
-SEXP_CXXR_SET(caar, sexp_car_set, sexp_car)
-SEXP_CXXR_SET(cadr, sexp_car_set, sexp_cdr)
-SEXP_CXXR_SET(cdar, sexp_cdr_set, sexp_car)
-SEXP_CXXR_SET(cddr, sexp_cdr_set, sexp_cdr)
-SEXP_CXXR_SET(caaar, sexp_car_set, sexp_car, sexp_car)
-SEXP_CXXR_SET(caadr, sexp_car_set, sexp_cdr, sexp_car)
-SEXP_CXXR_SET(cadar, sexp_car_set, sexp_car, sexp_cdr)
-SEXP_CXXR_SET(caddr, sexp_car_set, sexp_cdr, sexp_cdr)
-SEXP_CXXR_SET(cdaar, sexp_cdr_set, sexp_car, sexp_car)
-SEXP_CXXR_SET(cdadr, sexp_cdr_set, sexp_cdr, sexp_car)
-SEXP_CXXR_SET(cddar, sexp_cdr_set, sexp_car, sexp_cdr)
-SEXP_CXXR_SET(cdddr, sexp_cdr_set, sexp_cdr, sexp_cdr)
+SEXP_CXR(car);
+SEXP_CXR(cdr);
+SEXP_CXXR(caar, sexp_car, sexp_car);
+SEXP_CXXR(cadr, sexp_cdr, sexp_car);
+SEXP_CXXR(cdar, sexp_car, sexp_cdr);
+SEXP_CXXR(cddr, sexp_cdr, sexp_cdr);
+SEXP_CXXR(caaar, sexp_car, sexp_car, sexp_car);
+SEXP_CXXR(caadr, sexp_cdr, sexp_car, sexp_car);
+SEXP_CXXR(cadar, sexp_car, sexp_cdr, sexp_car);
+SEXP_CXXR(caddr, sexp_cdr, sexp_cdr, sexp_car);
+SEXP_CXXR(cdaar, sexp_car, sexp_car, sexp_cdr);
+SEXP_CXXR(cdadr, sexp_cdr, sexp_car, sexp_cdr);
+SEXP_CXXR(cddar, sexp_car, sexp_cdr, sexp_cdr);
+SEXP_CXXR(cdddr, sexp_cdr, sexp_cdr, sexp_cdr);
+SEXP_CXXR_SET(caar, sexp_car_set, sexp_car);
+SEXP_CXXR_SET(cadr, sexp_car_set, sexp_cdr);
+SEXP_CXXR_SET(cdar, sexp_cdr_set, sexp_car);
+SEXP_CXXR_SET(cddr, sexp_cdr_set, sexp_cdr);
+SEXP_CXXR_SET(caaar, sexp_car_set, sexp_car, sexp_car);
+SEXP_CXXR_SET(caadr, sexp_car_set, sexp_cdr, sexp_car);
+SEXP_CXXR_SET(cadar, sexp_car_set, sexp_car, sexp_cdr);
+SEXP_CXXR_SET(caddr, sexp_car_set, sexp_cdr, sexp_cdr);
+SEXP_CXXR_SET(cdaar, sexp_cdr_set, sexp_car, sexp_car);
+SEXP_CXXR_SET(cdadr, sexp_cdr_set, sexp_cdr, sexp_car);
+SEXP_CXXR_SET(cddar, sexp_cdr_set, sexp_car, sexp_cdr);
+SEXP_CXXR_SET(cdddr, sexp_cdr_set, sexp_cdr, sexp_cdr);
 
 #undef SEXP_CXR
 #undef SEXP_CXXR
