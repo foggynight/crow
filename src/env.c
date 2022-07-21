@@ -1,9 +1,7 @@
 #include "env.h"
 
 #include <assert.h>
-#include <stdlib.h>
 
-#include "error.h"
 #include "sexp.h"
 #include "types.h"
 

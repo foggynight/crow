@@ -1,7 +1,6 @@
 #ifndef CLOSURE_H
 #define CLOSURE_H
 
-#include "env.h"
 #include "sexp.h"
 #include "types.h"
 
