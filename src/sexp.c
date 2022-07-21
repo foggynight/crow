@@ -10,6 +10,8 @@
 #include "token.h"
 #include "types.h"
 
+// extern ----------------------------------------------------------------------
+
 #define _tok_null  &(tok_t){ TOK_NULL,  "()" }
 #define _tok_quote &(tok_t){ TOK_QUOTE, "quote" }
 #define _tok_begin &(tok_t){ TOK_QUOTE, "begin" }
@@ -17,6 +19,8 @@
 sexp_t *sexp_null  = &(sexp_t){ SEXP_NULL,   { _tok_null  } };
 sexp_t *sexp_quote = &(sexp_t){ SEXP_SYMBOL, { _tok_quote } };
 sexp_t *sexp_begin = &(sexp_t){ SEXP_SYMBOL, { _tok_begin } };
+
+// number ----------------------------------------------------------------------
 
 num_t *make_number(const tok_t *token) {
     char *endptr;
@@ -34,6 +38,8 @@ void dest_number(num_t *number) {
     free(number);
 }
 
+// cons ------------------------------------------------------------------------
+
 cons_t *make_cons(sexp_t *car, sexp_t *cdr) {
     cons_t *cons = malloc(sizeof(cons_t));
     if (!cons) error("make_cons: failed to allocate cons");
@@ -49,6 +55,8 @@ void dest_cons(cons_t *cons) {
     dest_sexp(cons->cdr);
     free(cons);
 }
+
+// sexp ------------------------------------------------------------------------
 
 sexp_t *make_sexp(sexp_type_t type, tok_t *symbol, num_t *number,
                   sexp_t *car, sexp_t *cdr)
@@ -87,58 +95,46 @@ sexp_t *make_sexp_cons(sexp_t *car, sexp_t *cdr) {
 }
 
 void dest_sexp(sexp_t *sexp) {
-    if (sexp) {
-        if (sexp_is_symbol(sexp)) {
-            dest_tok(sexp_symbol(sexp));
-        } else {
-            dest_sexp(sexp_car(sexp));
-            dest_sexp(sexp_cdr(sexp));
-        }
-        free(sexp);
+    assert(sexp);
+    if (sexp_is_symbol(sexp)) {
+        dest_tok(sexp_symbol(sexp));
+    } else {
+        dest_sexp(sexp_car(sexp));
+        dest_sexp(sexp_cdr(sexp));
     }
+    free(sexp);
 }
 
 sexp_t *sexp_closure(sexp_t *sexp, sexp_t *env) {
-    assert(sexp); assert(env);
+    assert(sexp); assert(sexp_is_cons(sexp));
+    assert(env); assert(sexp_is_cons(env));
     sexp_t *body = sexp_cons(sexp_begin, sexp_cdr(sexp));
     return make_closure(sexp_car(sexp), body, env);
 }
 
-sexp_type_t sexp_type(const sexp_t *sexp) {
-    return sexp->type;
-}
+sexp_type_t sexp_type(const sexp_t *s) {
+    assert(s); return s->type; }
+sexp_t *sexp_type_set(sexp_t *s, sexp_type_t type) {
+    sssert(s); s->type = type; return s; }
 
-sexp_t *sexp_type_set(sexp_t *sexp, sexp_type_t type) {
-    sexp->type = type;
-    return sexp;
-}
+#define SEXP_IS_TYPE(NAME, TYPE)                \
+    bool sexp_is_ ## NAME(const sexp_t *s) {    \
+        assert(s);                              \
+        s->type == SEXP_ ## TYPE;               \
+    }                                           \
 
-bool sexp_is_null(const sexp_t *sexp) {
-    return sexp->type == SEXP_NULL;
-}
+SEXP_IS_TYPE(null, NULL);
+SEXP_IS_TYPE(symbol, SYMBOL);
+SEXP_IS_TYPE(number, NUMBER);
+SEXP_IS_TYPE(cons, CONS);
+SEXP_IS_TYPE(closure, CLOSURE);
+SEXP_IS_TYPE(primitive, PRIMITIVE);
 
-bool sexp_is_symbol(const sexp_t *sexp) {
-    return sexp->type == SEXP_SYMBOL;
-}
-
-bool sexp_is_number(const sexp_t *sexp) {
-    return sexp->type == SEXP_NUMBER;
-}
-
-bool sexp_is_cons(const sexp_t *sexp) {
-    return sexp->type == SEXP_CONS;
-}
-
-bool sexp_is_closure(const sexp_t *sexp) {
-    return sexp->type == SEXP_CLOSURE;
-}
-
-bool sexp_is_primitive(const sexp_t *sexp) {
-    return sexp->type == SEXP_PRIMITIVE;
-}
+#undef SEXP_IS_TYPE
 
 bool sexp_is_eq(const sexp_t *sexp1, const sexp_t *sexp2) {
-    assert(sexp_is_symbol(sexp1)); assert(sexp_is_symbol(sexp2));
+    assert(sexp1); assert(sexp_is_symbol(sexp1));
+    assert(sexp2); assert(sexp_is_symbol(sexp2));
     return strcmp(sexp_symbol(sexp1)->word, sexp_symbol(sexp2)->word) == 0;
 }
 
@@ -232,6 +228,18 @@ SEXP_CXXR_SET(cdddr, sexp_cdr_set, sexp_cdr, sexp_cdr);
 
 sexp_t *sexp_cons(sexp_t *car, sexp_t *cdr) {
     return make_sexp_cons(car, cdr);
+}
+
+static num_t _sexp_length(const sexp_t *sexp) {
+    num_t length = 0;
+    for (const sexp_t *walk = sexp; !sexp_is_null(walk); walk = sexp_cdr(walk))
+        ++length;
+    return length;
+}
+
+sexp_t *sexp_length(const sexp_t *sexp) {
+    num_t length = _sexp_length(sexp);
+    return make_sexp_number();
 }
 
 sexp_t *sexp_assq(sexp_t *alst, const sexp_t *symbol) {

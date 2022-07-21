@@ -7,17 +7,18 @@
 #include "sexp.h"
 #include "types.h"
 
-// TODO: Replace 3 args with single sexp arg?
 sexp_t *make_closure(sexp_t *args, sexp_t *body, sexp_t *env) {
-    assert(args); assert(body); assert(env);
-    sexp_t *clos = sexp_cons(args, sexp_cons(body, sexp_cons(env, sexp_null)));
-    clos->type = SEXP_CLOSURE;
-    return clos;
+    assert(args); assert(sexp_is_cons(args));
+    assert(body); assert(sexp_is_cons(body));
+    assert(env); assert(sexp_is_cons(env));
+    return sexp_cons();
 }
 
 static sexp_t *ref(const sexp_t *clos,
                    sexp_t *(*func)(const sexp_t *s))
 {
+    assert(clos);
+    assert(func);
     return (sexp_type(clos) == SEXP_CLOSURE) ? func(clos) : NULL;
 }
 
