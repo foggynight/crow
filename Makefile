@@ -1,5 +1,5 @@
 PRG := crow
-WRN := -Wall -Wextra -Wpedantic
+WRN := -Wall -Wextra
 SRC := src/*.c
 INSTALL := /usr/local/bin
 
