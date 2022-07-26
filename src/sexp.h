@@ -66,6 +66,8 @@ bool sexp_is_num(const sexp_t *sexp);
 bool sexp_is_cons(const sexp_t *sexp);
 bool sexp_is_closure(const sexp_t *sexp);
 bool sexp_is_primitive(const sexp_t *sexp);
+bool sexp_is_list(const sexp_t *s);
+
 bool sexp_is_eq(const sexp_t *sexp1, const sexp_t *sexp2);
 
 tok_t *sexp_symbol(const sexp_t *sexp);

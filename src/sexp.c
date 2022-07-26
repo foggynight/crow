@@ -123,7 +123,8 @@ sexp_t *sexp_closure(sexp_t *sexp, sexp_t *env) {
     assert(sexp); assert(sexp_is_cons(sexp));
     assert(env); assert(sexp_is_cons(env));
     sexp_t *body = sexp_cons(sexp_begin, sexp_cdr(sexp));
-    return make_closure(sexp_car(sexp), body, env);
+    return make_closure(sexp_car(sexp), sexp_cadr(sexp), env);
+    //return make_closure(sexp_car(sexp), body, env); // TODO
 }
 
 sexp_type_t sexp_type(const sexp_t *s) {
@@ -145,6 +146,12 @@ SEXP_IS_TYPE(closure, CLOSURE);
 SEXP_IS_TYPE(primitive, PRIMITIVE);
 
 #undef SEXP_IS_TYPE
+
+// TODO: Check if the entire thing is a list.
+bool sexp_is_list(const sexp_t *s) {
+    assert(s);
+    return s->type == SEXP_CONS || s->type == SEXP_NULL;
+}
 
 bool sexp_is_eq(const sexp_t *sexp1, const sexp_t *sexp2) {
     assert(sexp1); assert(sexp_is_symbol(sexp1));
@@ -174,14 +181,12 @@ sexp_t *sexp_num_set(sexp_t *s, num_t *num) {
 
 #define SEXP_CXR(X)                                     \
     sexp_t *sexp_ ## X(const sexp_t *s) {               \
-        if (!s || s->type != SEXP_CONS)                 \
-            return NULL;                                \
+        assert(s);                                      \
         return s->cons->X;                              \
     }                                                   \
                                                         \
     sexp_t *sexp_ ## X ## _set(sexp_t *s, sexp_t *e) {  \
-        if (!s || !e || s->type != SEXP_CONS)           \
-            return NULL;                                \
+        assert(s && e);                                 \
         s->cons->X = e;                                 \
         return s;                                       \
     }                                                   \
@@ -277,6 +282,7 @@ sexp_t *sexp_reverse(sexp_t *sexp) {
 }
 
 void print_sexp(sexp_t *sexp) {
+    assert(sexp);
     if (sexp_is_symbol(sexp)) {
         fputs(sexp->symbol->word, stdout);
     } else if (sexp_is_num(sexp)) {
@@ -284,12 +290,23 @@ void print_sexp(sexp_t *sexp) {
         case NUM_INTEGER: printf("%ld", sexp->num->integer); break;
         case NUM_FLOATING: printf("%f", sexp->num->floating); break;
         }
-    } else {
+    } else if (sexp_is_null(sexp)) {
+        fputs("()", stdout);
+    } else if (sexp_is_cons(sexp)) {
         putchar('(');
-        for (sexp_t *walk = sexp; !sexp_is_null(walk); walk = sexp_cdr(walk)) {
+        sexp_t *walk;
+        for (walk = sexp; sexp_is_cons(walk); walk = sexp_cdr(walk)) {
             print_sexp(sexp_car(walk));
-            if (!sexp_is_null(sexp_cdr(walk))) putchar(' ');
+            if (!sexp_is_null(sexp_cdr(walk))) {
+                putchar(' ');
+                if (!sexp_is_cons(sexp_cdr(walk)))
+                    fputs(". ", stdout);
+            }
         }
+        if (!sexp_is_null(walk))
+            print_sexp(walk);
         putchar(')');
-    }
+    } else if (sexp_is_closure(sexp)) {
+        printf("#<closure>");
+    } else error("print_sexp: don't know how to print!");
 }

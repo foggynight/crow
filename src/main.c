@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include "env.h"
+#include "error.h"
 #include "eval.h"
 #include "reader.h"
 #include "sexp.h"
@@ -24,11 +25,13 @@ static void crow_repl(sexp_t *env) {
 recur:
     if (config.display_prompt) display_prompt();
 
-    sexp_t *sexp = crow_read(stdin);
-    if (!sexp) { putchar('\n'); return; }
+    sexp_t *sexp_read = crow_read(stdin);
+    if (!sexp_read) { putchar('\n'); return; }
 
-    //print_sexp(sexp);
-    print_sexp(crow_eval(sexp, env));
+    sexp_t *sexp_eval = crow_eval(sexp_read, env);
+    if (!sexp_eval) error("crow: failed to eval expression");
+
+    print_sexp(sexp_eval);
     putchar('\n');
 
     goto recur;
