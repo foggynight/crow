@@ -39,8 +39,8 @@ static sexp_t *crow_apply(sexp_t *proc, sexp_t *args) {
     if (sexp_is_primitive(proc)) {
         return primitive_apply(proc, args);
     } else if (sexp_is_closure(proc)) {
-        sexp_t *env = env_bind_formals(closure_args(proc), args,
-                                       closure_env(proc));
+        sexp_t *env = env_bind_formals(closure_env(proc),
+                                       closure_args(proc), args);
         return crow_eval(closure_body(proc), env);
     } else { error("crow_apply: invalid procedure"); }
     return NULL;
