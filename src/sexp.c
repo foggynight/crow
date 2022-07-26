@@ -20,22 +20,38 @@ sexp_t *sexp_null  = &(sexp_t){ SEXP_NULL,   { _tok_null  } };
 sexp_t *sexp_quote = &(sexp_t){ SEXP_SYMBOL, { _tok_quote } };
 sexp_t *sexp_begin = &(sexp_t){ SEXP_SYMBOL, { _tok_begin } };
 
-// number ----------------------------------------------------------------------
+// num ----------------------------------------------------------------------
 
-num_t *make_number(const tok_t *token) {
-    char *endptr;
-    num_t value = strtol(token->word, &endptr, 10);
-    if (*endptr) error("make_number: invalid number token: %s", token->word);
-
-    num_t *number = malloc(sizeof(num_t));
-    if (!number) error("make_number: failed to allocate number");
-    *number = value;
-
-    return number;
+num_t *make_num(void) {
+    num_t *num = malloc(sizeof(num_t));
+    if (!num) error("make_num: failed to allocate num");
+    return num;
 }
 
-void dest_number(num_t *number) {
-    free(number);
+num_t *make_num_integer(num_integer_t val) {
+    num_t *num = make_num();
+    num->type = NUM_INTEGER;
+    num->integer = val;
+    return num;
+}
+
+num_t *make_num_floating(num_floating_t val) {
+    num_t *num = make_num();
+    num->type = NUM_FLOATING;
+    num->floating = val;
+    return num;
+}
+
+void dest_num(num_t *num) {
+    free(num);
+}
+
+// TODO: Add floating point number parsing.
+num_t *tok2num(const tok_t *token) {
+    char *endptr;
+    num_integer_t val = strtol(token->word, &endptr, 10);
+    if (*endptr) error("make_num: invalid num token: %s", token->word);
+    return make_num_integer(val);
 }
 
 // cons ------------------------------------------------------------------------
@@ -58,7 +74,7 @@ void dest_cons(cons_t *cons) {
 
 // sexp ------------------------------------------------------------------------
 
-sexp_t *make_sexp(sexp_type_t type, tok_t *symbol, num_t *number,
+sexp_t *make_sexp(sexp_type_t type, tok_t *symbol, num_t *num,
                   sexp_t *car, sexp_t *cdr)
 {
     sexp_t *sexp = calloc(1, sizeof(sexp_t));
@@ -67,7 +83,7 @@ sexp_t *make_sexp(sexp_type_t type, tok_t *symbol, num_t *number,
     sexp->type = type;
     switch (type) {
     case SEXP_NULL: case SEXP_SYMBOL: sexp_symbol_set(sexp, symbol); break;
-    case SEXP_NUMBER: sexp_number_set(sexp, number); break;
+    case SEXP_NUM: sexp_num_set(sexp, num); break;
     case SEXP_CONS:
         sexp->cons = make_cons(NULL, NULL);
         sexp_car_set(sexp, car);
@@ -84,10 +100,8 @@ sexp_t *make_sexp_symbol(tok_t *symbol) {
     return make_sexp(SEXP_SYMBOL, symbol, NULL, NULL, NULL);
 }
 
-sexp_t *make_sexp_number(tok_t *token) {
-    assert(token->type == TOK_NUMBER);
-    num_t *number = make_number(token);
-    return make_sexp(SEXP_NUMBER, NULL, number, NULL, NULL);
+sexp_t *make_sexp_num(num_t *num) {
+    return make_sexp(SEXP_NUM, NULL, num, NULL, NULL);
 }
 
 sexp_t *make_sexp_cons(sexp_t *car, sexp_t *cdr) {
@@ -115,17 +129,17 @@ sexp_t *sexp_closure(sexp_t *sexp, sexp_t *env) {
 sexp_type_t sexp_type(const sexp_t *s) {
     assert(s); return s->type; }
 sexp_t *sexp_type_set(sexp_t *s, sexp_type_t type) {
-    sssert(s); s->type = type; return s; }
+    assert(s); s->type = type; return s; }
 
 #define SEXP_IS_TYPE(NAME, TYPE)                \
     bool sexp_is_ ## NAME(const sexp_t *s) {    \
         assert(s);                              \
-        s->type == SEXP_ ## TYPE;               \
+        return s->type == SEXP_ ## TYPE;        \
     }                                           \
 
 SEXP_IS_TYPE(null, NULL);
 SEXP_IS_TYPE(symbol, SYMBOL);
-SEXP_IS_TYPE(number, NUMBER);
+SEXP_IS_TYPE(num, NUM);
 SEXP_IS_TYPE(cons, CONS);
 SEXP_IS_TYPE(closure, CLOSURE);
 SEXP_IS_TYPE(primitive, PRIMITIVE);
@@ -148,13 +162,13 @@ sexp_t *sexp_symbol_set(sexp_t *s, tok_t *symbol) {
     return s;
 }
 
-num_t *sexp_number(const sexp_t *s) {
-    return (s && s->type == SEXP_NUMBER) ? s->number : NULL;
+num_t *sexp_num(const sexp_t *s) {
+    return (s && s->type == SEXP_NUM) ? s->num : NULL;
 }
 
-sexp_t *sexp_number_set(sexp_t *s, num_t *number) {
-    if (!s || !number || s->type != SEXP_NUMBER) return NULL;
-    s->number = number;
+sexp_t *sexp_num_set(sexp_t *s, num_t *num) {
+    if (!s || !num || s->type != SEXP_NUM) return NULL;
+    s->num = num;
     return s;
 }
 
@@ -230,16 +244,16 @@ sexp_t *sexp_cons(sexp_t *car, sexp_t *cdr) {
     return make_sexp_cons(car, cdr);
 }
 
-static num_t _sexp_length(const sexp_t *sexp) {
-    num_t length = 0;
+static num_integer_t _sexp_length(const sexp_t *sexp) {
+    num_integer_t length = 0;
     for (const sexp_t *walk = sexp; !sexp_is_null(walk); walk = sexp_cdr(walk))
         ++length;
     return length;
 }
 
 sexp_t *sexp_length(const sexp_t *sexp) {
-    num_t length = _sexp_length(sexp);
-    return make_sexp_number();
+    num_integer_t length = _sexp_length(sexp);
+    return make_sexp_num(make_num_integer(length));
 }
 
 sexp_t *sexp_assq(sexp_t *alst, const sexp_t *symbol) {
@@ -265,8 +279,11 @@ sexp_t *sexp_reverse(sexp_t *sexp) {
 void print_sexp(sexp_t *sexp) {
     if (sexp_is_symbol(sexp)) {
         fputs(sexp->symbol->word, stdout);
-    } else if (sexp_is_number(sexp)) {
-        printf("%ld", *(sexp->number));
+    } else if (sexp_is_num(sexp)) {
+        switch (sexp->num->type) {
+        case NUM_INTEGER: printf("%ld", sexp->num->integer); break;
+        case NUM_FLOATING: printf("%f", sexp->num->floating); break;
+        }
     } else {
         putchar('(');
         for (sexp_t *walk = sexp; !sexp_is_null(walk); walk = sexp_cdr(walk)) {

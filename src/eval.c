@@ -19,7 +19,7 @@ sexp_t *crow_eval(sexp_t *sexp, sexp_t *env) {
     switch (sexp->type) {
     case SEXP_NULL: error("crow_eval: null expression");
     case SEXP_SYMBOL: return env_lookup(env, sexp);
-    case SEXP_NUMBER: return sexp;
+    case SEXP_NUM: return sexp;
     case SEXP_CONS: {
         sexp_t *result = special_form(sexp, env);
         return result ? result

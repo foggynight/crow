@@ -82,7 +82,7 @@ static tok_t *lex_word(char *word) {
     case '(':  type = TOK_OPEN; break;
     case ')':  type = TOK_CLOSE; break;
     default:
-        if (str_is_numeric(word)) type = TOK_NUMBER;
+        if (str_is_numeric(word)) type = TOK_NUM;
         else type = TOK_SYMBOL;
     }
     return make_tok(type, word);
@@ -115,7 +115,7 @@ static sexp_t *parse_atom(void) {
     sexp_t *sexp;
     switch (tok->type) {
     case TOK_SYMBOL: sexp = make_sexp_symbol(tok); break;
-    case TOK_NUMBER: sexp = make_sexp_number(tok); break;
+    case TOK_NUM: sexp = make_sexp_num(tok2num(tok)); break;
     default: parse_error();
     }
 

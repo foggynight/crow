@@ -27,7 +27,8 @@ recur:
     sexp_t *sexp = crow_read(stdin);
     if (!sexp) { putchar('\n'); return; }
 
-    print_sexp(crow_eval(sexp, env));
+    print_sexp(sexp);
+    //print_sexp(crow_eval(sexp, env));
     putchar('\n');
 
     goto recur;

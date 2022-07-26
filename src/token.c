@@ -27,7 +27,7 @@ char *tok_word(tok_t *tok) {
 
 bool tok_type_is_atom(tok_type_t type) {
     return type == TOK_SYMBOL
-        || type == TOK_NUMBER
+        || type == TOK_NUM
         || type == TOK_BOOL
         || type == TOK_CHARACTER
         || type == TOK_STRING;
