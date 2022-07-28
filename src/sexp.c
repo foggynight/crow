@@ -313,7 +313,7 @@ void print_sexp(sexp_t *sexp) {
         if (!sexp_is_null(walk))
             print_sexp(walk);
         putchar(')');
-    } else if (sexp_is_closure(sexp)) {
-        printf("#<closure>");
+    } else if (sexp_is_closure(sexp) || sexp_is_primitive(sexp)) {
+        printf("#<procedure>");
     } else error("print_sexp: don't know how to print!");
 }
