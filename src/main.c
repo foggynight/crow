@@ -6,6 +6,7 @@
 #include "env.h"
 #include "error.h"
 #include "eval.h"
+#include "primitive.h"
 #include "reader.h"
 #include "sexp.h"
 #include "types.h"
@@ -41,10 +42,7 @@ int main(int argc, char **argv) {
     if (argc == 1) display_banner();
 
     sexp_t *toplevel = make_env();
-
-    sexp_t *sexp_a = make_sexp_symbol(make_tok(TOK_SYMBOL, "a"));
-    sexp_t *sexp_b = make_sexp_symbol(make_tok(TOK_SYMBOL, "b"));
-    env_insert(toplevel, sexp_cons(sexp_a, sexp_b));
+    toplevel = env_expand(toplevel, prim_frame());
 
     crow_repl(toplevel);
 }

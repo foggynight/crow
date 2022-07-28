@@ -8,8 +8,8 @@
 
 sexp_t *make_env(void);     // Make a new environment with a single empty frame.
 
-// Add an empty frame on top of env.
-sexp_t *env_expand(sexp_t *env);
+sexp_t *env_grow(sexp_t *env);                  // Add empty frame onto env.
+sexp_t *env_expand(sexp_t *env, sexp_t *frame); // Add given frame onto of env.
 
 // Insert (symbol . datum) pair into the top frame of env.
 sexp_t *env_insert(sexp_t *env, sexp_t *pair);

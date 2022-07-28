@@ -10,9 +10,14 @@ sexp_t *make_env(void) {
     return sexp_cons(sexp_null, sexp_null);
 }
 
-sexp_t *env_expand(sexp_t *env) {
+sexp_t *env_grow(sexp_t *env) {
     assert(env);
     return sexp_cons(sexp_null, env);
+}
+
+sexp_t *env_expand(sexp_t *env, sexp_t *frame) {
+    assert(env); assert(frame);
+    return sexp_cons(frame, env);
 }
 
 sexp_t *env_insert(sexp_t *env, sexp_t *pair) {

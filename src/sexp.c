@@ -59,10 +59,8 @@ num_t *tok2num(const tok_t *token) {
 cons_t *make_cons(sexp_t *car, sexp_t *cdr) {
     cons_t *cons = malloc(sizeof(cons_t));
     if (!cons) error("make_cons: failed to allocate cons");
-
     cons->car = car;
     cons->cdr = cdr;
-
     return cons;
 }
 
@@ -75,7 +73,7 @@ void dest_cons(cons_t *cons) {
 // sexp ------------------------------------------------------------------------
 
 sexp_t *make_sexp(sexp_type_t type, tok_t *symbol, num_t *num,
-                  sexp_t *car, sexp_t *cdr)
+                  sexp_t *car, sexp_t *cdr, sexp_t *(*func)(sexp_t *))
 {
     sexp_t *sexp = calloc(1, sizeof(sexp_t));
     if (!sexp) error("make_sexp: failed to allocate sexp");
@@ -86,9 +84,9 @@ sexp_t *make_sexp(sexp_type_t type, tok_t *symbol, num_t *num,
     case SEXP_NUM: sexp_num_set(sexp, num); break;
     case SEXP_CONS:
         sexp->cons = make_cons(NULL, NULL);
-        sexp_car_set(sexp, car);
-        sexp_cdr_set(sexp, cdr);
+        sexp_car_set(sexp, car); sexp_cdr_set(sexp, cdr);
         break;
+    case SEXP_PRIMITIVE: sexp->func = func; break;
     default: error("make_sexp: invalid type: %d", type);
     }
 
@@ -97,15 +95,19 @@ sexp_t *make_sexp(sexp_type_t type, tok_t *symbol, num_t *num,
 
 sexp_t *make_sexp_symbol(tok_t *symbol) {
     assert(symbol->type == TOK_SYMBOL);
-    return make_sexp(SEXP_SYMBOL, symbol, NULL, NULL, NULL);
+    return make_sexp(SEXP_SYMBOL, symbol, NULL, NULL, NULL, NULL);
 }
 
 sexp_t *make_sexp_num(num_t *num) {
-    return make_sexp(SEXP_NUM, NULL, num, NULL, NULL);
+    return make_sexp(SEXP_NUM, NULL, num, NULL, NULL, NULL);
 }
 
 sexp_t *make_sexp_cons(sexp_t *car, sexp_t *cdr) {
-    return make_sexp(SEXP_CONS, NULL, NULL, car, cdr);
+    return make_sexp(SEXP_CONS, NULL, NULL, car, cdr, NULL);
+}
+
+sexp_t *make_sexp_primitive(sexp_t *(*func)(sexp_t *)) {
+    return make_sexp(SEXP_PRIMITIVE, NULL, NULL, NULL, NULL, func);
 }
 
 void dest_sexp(sexp_t *sexp) {
@@ -125,6 +127,11 @@ sexp_t *sexp_closure(sexp_t *sexp, sexp_t *env) {
     sexp_t *body = sexp_cons(sexp_begin, sexp_cdr(sexp));
     return make_closure(sexp_car(sexp), sexp_cadr(sexp), env);
     //return make_closure(sexp_car(sexp), body, env); // TODO
+}
+
+sexp_t *sexp_primitive(sexp_t *(*func)(sexp_t *)) {
+    assert(func);
+    return make_sexp_primitive(func);
 }
 
 sexp_type_t sexp_type(const sexp_t *s) {
