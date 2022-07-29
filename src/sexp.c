@@ -125,8 +125,7 @@ sexp_t *sexp_closure(sexp_t *sexp, sexp_t *env) {
     assert(sexp); assert(sexp_is_cons(sexp));
     assert(env); assert(sexp_is_cons(env));
     sexp_t *body = sexp_cons(sexp_begin, sexp_cdr(sexp));
-    return make_closure(sexp_car(sexp), sexp_cadr(sexp), env);
-    //return make_closure(sexp_car(sexp), body, env); // TODO
+    return make_closure(sexp_car(sexp), body, env);
 }
 
 sexp_t *sexp_primitive(sexp_t *(*func)(sexp_t *)) {

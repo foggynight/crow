@@ -52,22 +52,20 @@ static sexp_t *eval_list(sexp_t *list, sexp_t *env) {
                     eval_list(sexp_cdr(list), env));
 }
 
-// sexp -> (args sexp*)
-// args -> symbol | (sexp*) | (sexp+ . sexp)
+// sexp -> (ARGS SEXP*)
+// ARGS -> SYMBOL | (SEXP*) | (SEXP+ . SEXP)
 static sexp_t *sf_lambda(sexp_t *sexp, sexp_t *env) {
     assert(sexp); assert(env);
     return sexp_closure(sexp, env);
 }
 
-// TODO
+// sexp -> (SEXP*)
 static sexp_t *sf_begin(sexp_t *sexp, sexp_t *env) {
     assert(sexp); assert(env);
-    return sexp;
-//    switch (sexp->type) {
-//    case SEXP_NULL: break;
-//    case SEXP_CONS: break;
-//    case SEXP_NULL: break;
-//    }
+    sexp_t *res = sexp_null;
+    for (sexp_t *walk = sexp; !sexp_is_null(walk); walk = sexp_cdr(walk))
+        res = crow_eval(sexp_car(walk), env);
+    return res;
 }
 
 static sexp_t *special_form(sexp_t *form, sexp_t *env) {
