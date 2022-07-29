@@ -45,6 +45,7 @@ static sexp_t *cdr(sexp_t *args) { return sexp_cdr(sexp_car(args)); }
     }                                                           \
 
 NUM_PRED(eq, !=);
+NUM_PRED(neq, ==);
 NUM_PRED(lt, >=);
 NUM_PRED(gt, <=);
 NUM_PRED(lte, >);
@@ -92,6 +93,7 @@ PRIM_PAIR("cons", cons);
 PRIM_PAIR("car", car);
 PRIM_PAIR("cdr", cdr);
 PRIM_PAIR("=", num_eq);
+PRIM_PAIR("<>", num_neq);
 PRIM_PAIR("<", num_lt);
 PRIM_PAIR(">", num_gt);
 PRIM_PAIR("<=", num_lte);
@@ -105,6 +107,7 @@ sexp_t *prim_frame(void) {
         sexp_cons(car_pair(),
         sexp_cons(cdr_pair(),
         sexp_cons(num_eq_pair(),
+        sexp_cons(num_neq_pair(),
         sexp_cons(num_lt_pair(),
         sexp_cons(num_gt_pair(),
         sexp_cons(num_lte_pair(),
@@ -112,5 +115,5 @@ sexp_t *prim_frame(void) {
         sexp_cons(add_pair(),
         sexp_cons(sub_pair(),
                   sexp_null
-    ))))))))));
+    )))))))))));
 }
