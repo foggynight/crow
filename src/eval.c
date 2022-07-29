@@ -52,6 +52,13 @@ static sexp_t *eval_list(sexp_t *list, sexp_t *env) {
                     eval_list(sexp_cdr(list), env));
 }
 
+// sexp -> (SEXP)
+static sexp_t *sf_quote(sexp_t *sexp) {
+    if (!sexp_is_null(sexp_cdr(sexp)))
+        error("special_form: invalid quote form");
+    return sexp_car(sexp);
+}
+
 // sexp -> (ARGS SEXP*)
 // ARGS -> SYMBOL | (SEXP*) | (SEXP+ . SEXP)
 static sexp_t *sf_lambda(sexp_t *sexp, sexp_t *env) {
@@ -97,19 +104,11 @@ static sexp_t *special_form(sexp_t *form, sexp_t *env) {
     char *name = tok_word(sexp_symbol(head));
     sexp_t *rest = sexp_cdr(form);
 
-    if (strcmp(name, "quote") == 0) {
-        if (!sexp_is_null(sexp_cdr(rest)))
-            error("special_form: invalid quote form");
-        return sexp_car(rest);
-    } else if (strcmp(name, "lambda") == 0) {
-        return sf_lambda(rest, env);
-    } else if (strcmp(name, "begin") == 0) {
-        return sf_begin(rest, env);
-    } else if (strcmp(name, "cond") == 0) {
-        return sf_cond(rest, env);
-    } else if (strcmp(name, "define") == 0) {
-        return sf_define(rest, env);
-    }
+    if      (strcmp(name, "quote")  == 0) { return sf_quote(rest); }
+    else if (strcmp(name, "lambda") == 0) { return sf_lambda(rest, env); }
+    else if (strcmp(name, "begin")  == 0) { return sf_begin(rest, env); }
+    else if (strcmp(name, "cond")   == 0) { return sf_cond(rest, env); }
+    else if (strcmp(name, "define") == 0) { return sf_define(rest, env); }
 
     return NULL;
 }
