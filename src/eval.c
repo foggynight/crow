@@ -87,11 +87,23 @@ static sexp_t *sf_cond(sexp_t *sexp, sexp_t *env) {
     return sexp_null;
 }
 
-// sexp -> (SYMBOL VALUE)
+// sexp -> (SYMBOL SEXP?)
+//       | ((SYMBOL SYMBOL*) SEXP*)
+//       | ((SYMBOL SYMBOL* . SYMBOL) SEXP*)
 static sexp_t *sf_define(sexp_t *sexp, sexp_t *env) {
-    sexp_t *key = sexp_car(sexp);
-    sexp_t *datum = crow_eval(sexp_cadr(sexp), env);
-    env_insert(env, sexp_cons(key, datum));
+    if (sexp_is_null(sexp))
+        error("sf_define: not enough arguments");
+    sexp_t *head = sexp_car(sexp), *tail = sexp_cdr(sexp);
+    if (sexp_is_symbol(head)) {
+        sexp_t *datum = crow_eval(sexp_car(tail), env);
+        env_insert(env, sexp_cons(head, datum));
+    } else if (sexp_is_cons(head)) {
+        sexp_t *key = sexp_car(head), *args = sexp_cdr(head);
+        sexp_t *lambda = sexp_cons(sexp_lambda, sexp_cons(args, tail));
+        env_insert(env, sexp_cons(key, crow_eval(lambda, env)));
+    } else {
+        error("sf_define: invalid define expression");
+    }
     return sexp_null;
 }
 

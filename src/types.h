@@ -1,7 +1,7 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-// num ----------------------------------------------------------------------
+// num -------------------------------------------------------------------------
 
 typedef enum num_type num_type_t;
 typedef struct num num_t;

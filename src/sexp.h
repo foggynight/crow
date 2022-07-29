@@ -38,6 +38,7 @@ struct sexp {
 
 extern sexp_t *sexp_null;
 extern sexp_t *sexp_quote;
+extern sexp_t *sexp_lambda;
 extern sexp_t *sexp_begin;
 extern sexp_t *sexp_t_sym;
 extern sexp_t *sexp_else;
