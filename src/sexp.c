@@ -12,13 +12,15 @@
 
 // extern ----------------------------------------------------------------------
 
-#define _tok_null  &(tok_t){ TOK_NULL,  "()" }
-#define _tok_quote &(tok_t){ TOK_QUOTE, "quote" }
-#define _tok_begin &(tok_t){ TOK_QUOTE, "begin" }
+#define _tok_null  &(tok_t){ TOK_NULL,   "()" }
+#define _tok_quote &(tok_t){ TOK_QUOTE,  "quote" }
+#define _tok_begin &(tok_t){ TOK_SYMBOL, "begin" }
+#define _tok_else  &(tok_t){ TOK_SYMBOL, "else" }
 
 sexp_t *sexp_null  = &(sexp_t){ SEXP_NULL,   { _tok_null  } };
 sexp_t *sexp_quote = &(sexp_t){ SEXP_SYMBOL, { _tok_quote } };
 sexp_t *sexp_begin = &(sexp_t){ SEXP_SYMBOL, { _tok_begin } };
+sexp_t *sexp_else  = &(sexp_t){ SEXP_SYMBOL, { _tok_else } };
 
 // num ----------------------------------------------------------------------
 
@@ -159,12 +161,6 @@ bool sexp_is_list(const sexp_t *s) {
     return s->type == SEXP_CONS || s->type == SEXP_NULL;
 }
 
-bool sexp_is_eq(const sexp_t *sexp1, const sexp_t *sexp2) {
-    assert(sexp1); assert(sexp_is_symbol(sexp1));
-    assert(sexp2); assert(sexp_is_symbol(sexp2));
-    return strcmp(sexp_symbol(sexp1)->word, sexp_symbol(sexp2)->word) == 0;
-}
-
 tok_t *sexp_symbol(const sexp_t *s) {
     return (s && s->type == SEXP_SYMBOL) ? s->symbol : NULL;
 }
@@ -251,6 +247,22 @@ SEXP_CXXR_SET(cdddr, sexp_cdr_set, sexp_cdr, sexp_cdr);
 #undef SEXP_CXXR
 #undef SEXP_CXXR_SET
 
+bool sexp_eq_p(const sexp_t *sexp1, const sexp_t *sexp2) {
+    assert(sexp1); assert(sexp2);
+    if (!sexp_is_symbol(sexp1) || !sexp_is_symbol(sexp2)) return false;
+    return strcmp(sexp_symbol(sexp1)->word, sexp_symbol(sexp2)->word) == 0;
+}
+
+bool sexp_true_p(const sexp_t *sexp) {
+    assert(sexp);
+    return !sexp_is_null(sexp);
+}
+
+bool sexp_false_p(const sexp_t *sexp) {
+    assert(sexp);
+    return sexp_is_null(sexp);
+}
+
 sexp_t *sexp_cons(sexp_t *car, sexp_t *cdr) {
     return make_sexp_cons(car, cdr);
 }
@@ -270,7 +282,7 @@ sexp_t *sexp_length(const sexp_t *sexp) {
 sexp_t *sexp_assq(sexp_t *alst, const sexp_t *symbol) {
     for (sexp_t *lst = alst; !sexp_is_null(lst); lst = sexp_cdr(lst)) {
         sexp_t *pair = sexp_car(lst);
-        if (sexp_is_eq(sexp_car(pair), symbol))
+        if (sexp_eq_p(sexp_car(pair), symbol))
             return pair;
     }
     return sexp_null;

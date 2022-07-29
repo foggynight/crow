@@ -39,6 +39,7 @@ struct sexp {
 extern sexp_t *sexp_null;
 extern sexp_t *sexp_quote;
 extern sexp_t *sexp_begin;
+extern sexp_t *sexp_else;
 
 num_t *make_num(void);
 num_t *make_num_integer(num_integer_t val);
@@ -70,8 +71,6 @@ bool sexp_is_closure(const sexp_t *sexp);
 bool sexp_is_primitive(const sexp_t *sexp);
 bool sexp_is_list(const sexp_t *s);
 
-bool sexp_is_eq(const sexp_t *sexp1, const sexp_t *sexp2);
-
 tok_t *sexp_symbol(const sexp_t *sexp);
 sexp_t *sexp_symbol_set(sexp_t *sexp, tok_t *symbol);
 num_t *sexp_num(const sexp_t *sexp);
@@ -98,6 +97,9 @@ SEXP_CXR(cdddr);
 
 #undef SEXP_CXR
 
+bool sexp_eq_p(const sexp_t *sexp1, const sexp_t *sexp2);
+bool sexp_true_p(const sexp_t *sexp);
+bool sexp_false_p(const sexp_t *sexp);
 sexp_t *sexp_cons(sexp_t *car, sexp_t *cdr);
 sexp_t *sexp_length(const sexp_t *sexp);
 sexp_t *sexp_assq(sexp_t *alst, const sexp_t *symbol);

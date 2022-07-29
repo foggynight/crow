@@ -68,6 +68,19 @@ static sexp_t *sf_begin(sexp_t *sexp, sexp_t *env) {
     return res;
 }
 
+// sexp   -> (CLAUSE*)
+// CLAUSE -> (SEXP SEXP*)
+static sexp_t *sf_cond(sexp_t *sexp, sexp_t *env) {
+    for (sexp_t *walk = sexp; !sexp_is_null(walk); walk = sexp_cdr(walk)) {
+        sexp_t *clause = sexp_car(walk);
+        sexp_t *pred = sexp_car(clause);
+        if (sexp_eq_p(pred, sexp_else) || sexp_true_p(crow_eval(pred, env)))
+            return crow_eval(sexp_cons(sexp_begin, sexp_cdr(clause)), env);
+    }
+    return sexp_null;
+}
+
+// sexp -> (SYMBOL VALUE)
 static sexp_t *sf_define(sexp_t *sexp, sexp_t *env) {
     sexp_t *key = sexp_car(sexp);
     sexp_t *datum = crow_eval(sexp_cadr(sexp), env);
@@ -92,6 +105,8 @@ static sexp_t *special_form(sexp_t *form, sexp_t *env) {
         return sf_lambda(rest, env);
     } else if (strcmp(name, "begin") == 0) {
         return sf_begin(rest, env);
+    } else if (strcmp(name, "cond") == 0) {
+        return sf_cond(rest, env);
     } else if (strcmp(name, "define") == 0) {
         return sf_define(rest, env);
     }
