@@ -1,3 +1,7 @@
+// All primitive functions take a single sexp argument and return a sexp. The
+// arguments of the primitive itself are contained in the sexp argument, which
+// is always a list.
+
 // TODO: Use macros to do this better.
 
 #include "primitive.h"
