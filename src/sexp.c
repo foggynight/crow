@@ -15,11 +15,13 @@
 #define _tok_null  &(tok_t){ TOK_NULL,   "()" }
 #define _tok_quote &(tok_t){ TOK_QUOTE,  "quote" }
 #define _tok_begin &(tok_t){ TOK_SYMBOL, "begin" }
+#define _tok_t_sym &(tok_t){ TOK_SYMBOL, "t" }
 #define _tok_else  &(tok_t){ TOK_SYMBOL, "else" }
 
 sexp_t *sexp_null  = &(sexp_t){ SEXP_NULL,   { _tok_null  } };
 sexp_t *sexp_quote = &(sexp_t){ SEXP_SYMBOL, { _tok_quote } };
 sexp_t *sexp_begin = &(sexp_t){ SEXP_SYMBOL, { _tok_begin } };
+sexp_t *sexp_t_sym = &(sexp_t){ SEXP_SYMBOL, { _tok_t_sym } };
 sexp_t *sexp_else  = &(sexp_t){ SEXP_SYMBOL, { _tok_else } };
 
 // num ----------------------------------------------------------------------
