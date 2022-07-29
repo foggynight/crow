@@ -2,34 +2,57 @@
 // arguments of the primitive itself are contained in the sexp argument, which
 // is always a list.
 
-// TODO: Use macros to do this better.
-
 #include "primitive.h"
 
 #include "error.h"
 #include "sexp.h"
 #include "types.h"
 
-sexp_t *prim_cons(sexp_t *args) { return sexp_cons(sexp_car(args),
-                                                   sexp_cadr(args)); }
-static sexp_t *prim_cons_pair(void) {
-    return sexp_cons(make_sexp_symbol(make_tok(TOK_SYMBOL, "cons")),
-                     sexp_primitive(prim_cons));
-}
+#define PRIM_PAIR(PRIM_NAME, FUNC_NAME)                                     \
+    static sexp_t *FUNC_NAME ## _pair(void) {                               \
+        return sexp_cons(make_sexp_symbol(make_tok(TOK_SYMBOL, PRIM_NAME)), \
+                         sexp_primitive(FUNC_NAME));                        \
+    }                                                                       \
 
-sexp_t *prim_car(sexp_t *args) { return sexp_car(sexp_car(args)); }
-static sexp_t *prim_car_pair(void) {
-    return sexp_cons(make_sexp_symbol(make_tok(TOK_SYMBOL, "car")),
-                     sexp_primitive(prim_car));
-}
+static sexp_t *cons(sexp_t *a) { return sexp_cons(sexp_car(a), sexp_cadr(a)); }
+static sexp_t *car(sexp_t *args) { return sexp_car(sexp_car(args)); }
+static sexp_t *cdr(sexp_t *args) { return sexp_cdr(sexp_car(args)); }
 
-sexp_t *prim_cdr(sexp_t *args) { return sexp_cdr(sexp_car(args)); }
-static sexp_t *prim_cdr_pair(void) {
-    return sexp_cons(make_sexp_symbol(make_tok(TOK_SYMBOL, "cdr")),
-                     sexp_primitive(prim_cdr));
-}
+#define NUM_PRED(NAME, PRED)                                    \
+    static sexp_t *num_ ## NAME(sexp_t *args) {                 \
+        bool res = true;                                        \
+        bool first = true;                                      \
+        num_integer_t last;                                     \
+        for (sexp_t *walk = args;                               \
+             !sexp_is_null(walk);                               \
+             walk = sexp_cdr(walk)) {                           \
+            sexp_t *num = sexp_car(walk);                       \
+            if (!sexp_is_num(num))                              \
+                error("bad argument type: not a number");       \
+            if (first) {                                        \
+                first = false;                                  \
+                last = sexp_num(num)->integer;                  \
+            } else {                                            \
+                num_integer_t curr = sexp_num(num)->integer;    \
+                if (last PRED curr) {                           \
+                    res = false;                                \
+                    break;                                      \
+                }                                               \
+                last = curr;                                    \
+            }                                                   \
+        }                                                       \
+        return res ? sexp_t_sym : sexp_null;                    \
+    }                                                           \
 
-sexp_t *prim_add(sexp_t *args) {
+NUM_PRED(eq, !=);
+NUM_PRED(lt, >=);
+NUM_PRED(gt, <=);
+NUM_PRED(lte, >);
+NUM_PRED(gte, <);
+
+#undef NUM_PRED
+
+static sexp_t *add(sexp_t *args) {
     num_integer_t accum = 0;
     for (sexp_t *walk = args; !sexp_is_null(walk); walk = sexp_cdr(walk)) {
         sexp_t *num = sexp_car(walk);
@@ -39,39 +62,8 @@ sexp_t *prim_add(sexp_t *args) {
     }
     return make_sexp_num(make_num_integer(accum));
 }
-static sexp_t *prim_add_pair(void) {
-    return sexp_cons(make_sexp_symbol(make_tok(TOK_SYMBOL, "+")),
-                     sexp_primitive(prim_add));
-}
 
-sexp_t *prim_num_lt(sexp_t *args) {
-    bool res = true;
-    bool first = true;
-    num_integer_t last;
-    for (sexp_t *walk = args; !sexp_is_null(walk); walk = sexp_cdr(walk)) {
-        sexp_t *num = sexp_car(walk);
-        if (!sexp_is_num(num))
-            error("prim_num_lt: bad argument type: not a number");
-        if (first) {
-            first = false;
-            last = sexp_num(num)->integer;
-        } else {
-            num_integer_t curr = sexp_num(num)->integer;
-            if (last >= curr) {
-                res = false;
-                break;
-            }
-            last = curr;
-        }
-    }
-    return res ? sexp_t_sym : sexp_null;
-}
-static sexp_t *prim_num_lt_pair(void) {
-    return sexp_cons(make_sexp_symbol(make_tok(TOK_SYMBOL, "<")),
-                     sexp_primitive(prim_num_lt));
-}
-
-sexp_t *prim_sub(sexp_t *args) {
+static sexp_t *sub(sexp_t *args) {
     if (sexp_is_null(args))
         error("prim_sub: too few arguments");
     sexp_t *num = sexp_car(args);
@@ -93,21 +85,32 @@ sexp_t *prim_sub(sexp_t *args) {
     }
     return make_sexp_num(make_num_integer(value));
 }
-static sexp_t *prim_sub_pair(void) {
-    return sexp_cons(make_sexp_symbol(make_tok(TOK_SYMBOL, "-")),
-                     sexp_primitive(prim_sub));
-}
 
 //------------------------------------------------------------------------------
 
+PRIM_PAIR("cons", cons);
+PRIM_PAIR("car", car);
+PRIM_PAIR("cdr", cdr);
+PRIM_PAIR("=", num_eq);
+PRIM_PAIR("<", num_lt);
+PRIM_PAIR(">", num_gt);
+PRIM_PAIR("<=", num_lte);
+PRIM_PAIR(">=", num_gte);
+PRIM_PAIR("+", add);
+PRIM_PAIR("-", sub);
+
 sexp_t *prim_frame(void) {
     return
-        sexp_cons(prim_cons_pair(),
-        sexp_cons(prim_car_pair(),
-        sexp_cons(prim_cdr_pair(),
-        sexp_cons(prim_num_lt_pair(),
-        sexp_cons(prim_add_pair(),
-        sexp_cons(prim_sub_pair(),
+        sexp_cons(cons_pair(),
+        sexp_cons(car_pair(),
+        sexp_cons(cdr_pair(),
+        sexp_cons(num_eq_pair(),
+        sexp_cons(num_lt_pair(),
+        sexp_cons(num_gt_pair(),
+        sexp_cons(num_lte_pair(),
+        sexp_cons(num_gte_pair(),
+        sexp_cons(add_pair(),
+        sexp_cons(sub_pair(),
                   sexp_null
-            ))))));
+    ))))))))));
 }
