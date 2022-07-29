@@ -68,6 +68,13 @@ static sexp_t *sf_begin(sexp_t *sexp, sexp_t *env) {
     return res;
 }
 
+static sexp_t *sf_define(sexp_t *sexp, sexp_t *env) {
+    sexp_t *key = sexp_car(sexp);
+    sexp_t *datum = crow_eval(sexp_cadr(sexp), env);
+    env_insert(env, sexp_cons(key, datum));
+    return sexp_null;
+}
+
 static sexp_t *special_form(sexp_t *form, sexp_t *env) {
     assert(form); assert(env);
 
@@ -85,6 +92,8 @@ static sexp_t *special_form(sexp_t *form, sexp_t *env) {
         return sf_lambda(rest, env);
     } else if (strcmp(name, "begin") == 0) {
         return sf_begin(rest, env);
+    } else if (strcmp(name, "define") == 0) {
+        return sf_define(rest, env);
     }
 
     return NULL;
