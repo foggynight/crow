@@ -8,12 +8,6 @@
 #include "sexp.h"
 #include "types.h"
 
-#define PRIM_PAIR(PRIM_NAME, FUNC_NAME)                                     \
-    static sexp_t *FUNC_NAME ## _pair(void) {                               \
-        return sexp_cons(make_sexp_symbol(make_tok(TOK_SYMBOL, PRIM_NAME)), \
-                         sexp_primitive(FUNC_NAME));                        \
-    }                                                                       \
-
 static sexp_t *cons(sexp_t *a) { return sexp_cons(sexp_car(a), sexp_cadr(a)); }
 static sexp_t *car(sexp_t *args) { return sexp_car(sexp_car(args)); }
 static sexp_t *cdr(sexp_t *args) { return sexp_cdr(sexp_car(args)); }
@@ -89,6 +83,12 @@ static sexp_t *sub(sexp_t *args) {
 
 //------------------------------------------------------------------------------
 
+#define PRIM_PAIR(PRIM_NAME, FUNC_NAME)                                     \
+    static sexp_t *FUNC_NAME ## _pair(void) {                               \
+        return sexp_cons(make_sexp_symbol(make_tok(TOK_SYMBOL, PRIM_NAME)), \
+                         sexp_primitive(FUNC_NAME));                        \
+    }                                                                       \
+
 PRIM_PAIR("cons", cons);
 PRIM_PAIR("car", car);
 PRIM_PAIR("cdr", cdr);
@@ -100,6 +100,8 @@ PRIM_PAIR("<=", num_lte);
 PRIM_PAIR(">=", num_gte);
 PRIM_PAIR("+", add);
 PRIM_PAIR("-", sub);
+
+#undef PRIM_PAIR
 
 sexp_t *prim_frame(void) {
     return
