@@ -58,6 +58,7 @@ sexp_t *env_bind_formals(sexp_t *env,  // env to add a frame onto
             else error("env_bind_formals: missing arguments");
         } else {
             cons = sexp_cons(sexp_car(args), sexp_car(vals));
+            frame = sexp_cons(cons, frame);
             args = sexp_cdr(args); vals = sexp_cdr(vals);
         }
     }
