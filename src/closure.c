@@ -9,7 +9,8 @@
 
 sexp_t *make_closure(sexp_t *args, sexp_t *body, sexp_t *env) {
     assert(args); assert(body); assert(env);
-    assert(sexp_is_list(args)); assert(sexp_is_list(env));
+    assert(sexp_is_symbol(args) || sexp_is_list(args));
+    assert(sexp_is_list(env));
     sexp_t *clos = sexp_cons(args, sexp_cons(body, sexp_cons(env, sexp_null)));
     sexp_type_set(clos, SEXP_CLOSURE);
     return clos;

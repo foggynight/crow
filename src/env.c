@@ -46,16 +46,16 @@ sexp_t *env_bind_formals(sexp_t *env,  // env to add a frame onto
 {
     sexp_t *frame = sexp_null;
     for (sexp_t *cons;;) {
-        if (sexp_is_null(args)) {
+        if (sexp_is_symbol(args)) {
+            cons = sexp_cons(args, vals);
+            frame = sexp_cons(cons, frame);
+            break;
+        } else if (sexp_is_null(args)) {
             if (sexp_is_null(vals)) break;
             else error("env_bind_formals: too many arguments");
         } else if (sexp_is_null(vals)) {
             if (sexp_is_null(args)) break;
             else error("env_bind_formals: missing arguments");
-        } else if (sexp_is_symbol(args)) {
-            cons = sexp_cons(args, vals);
-            frame = sexp_cons(cons, frame);
-            break;
         } else {
             cons = sexp_cons(sexp_car(args), sexp_car(vals));
             args = sexp_cdr(args); vals = sexp_cdr(vals);
