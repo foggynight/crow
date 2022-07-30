@@ -39,20 +39,27 @@ sexp_t *env_lookup(const sexp_t *env, const sexp_t *symbol) {
     return sexp_is_null(pair) ? sexp_null : sexp_cdr(pair);
 }
 
-sexp_t *env_bind_formals(sexp_t *env,         // env to add a frame onto
-                         sexp_t *arg_symbols, // list of arg symbols
-                         sexp_t *arg_values)  // list of arg values
+// args -> SYMBOL | (SYMBOL*) | (SYMBOL+ . SYMBOL)
+sexp_t *env_bind_formals(sexp_t *env,  // env to add a frame onto
+                         sexp_t *args, // list of arg symbols
+                         sexp_t *vals) // list of arg values
 {
     sexp_t *frame = sexp_null;
-    sexp_t *sym, *val;
-    for (sym = arg_symbols, val = arg_values;
-         !sexp_is_null(sym) && !sexp_is_null(val);
-         sym = sexp_cdr(sym), val = sexp_cdr(val))
-    {
-        sexp_t *cons = sexp_cons(sexp_car(sym), sexp_car(val));
-        frame = sexp_cons(cons, frame);
+    for (sexp_t *cons;;) {
+        if (sexp_is_null(args)) {
+            if (sexp_is_null(vals)) break;
+            else error("env_bind_formals: too many arguments");
+        } else if (sexp_is_null(vals)) {
+            if (sexp_is_null(args)) break;
+            else error("env_bind_formals: missing arguments");
+        } else if (sexp_is_symbol(args)) {
+            cons = sexp_cons(args, vals);
+            frame = sexp_cons(cons, frame);
+            break;
+        } else {
+            cons = sexp_cons(sexp_car(args), sexp_car(vals));
+            args = sexp_cdr(args); vals = sexp_cdr(vals);
+        }
     }
-    if (!sexp_is_null(sym) || !sexp_is_null(val))
-        error("env_bind_formals: different number of arguments and values");
     return sexp_cons(frame, env);
 }

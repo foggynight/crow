@@ -22,6 +22,6 @@ sexp_t *env_fetch(const sexp_t *env, const sexp_t *symbol);
 // found, or null if no pair was found.
 sexp_t *env_lookup(const sexp_t *env, const sexp_t *symbol);
 
-sexp_t *env_bind_formals(sexp_t *env, sexp_t *arg_symbols, sexp_t *arg_values);
+sexp_t *env_bind_formals(sexp_t *env, sexp_t *args, sexp_t *vals);
 
 #endif // ENV_H
