@@ -1,0 +1,4 @@
+(define (map1 p xs)
+  (cond ((null? xs) '())
+        (else (cons (p (car xs))
+                    (map1 p (cdr xs))))))
