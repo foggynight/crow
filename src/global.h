@@ -9,9 +9,6 @@ extern FILE *input_port;
 extern FILE *output_port;
 extern FILE *error_port;
 
-extern const char *delim_drop; // token delimiters to drop
-extern const char *delim_keep; // token delimiters to tokenize
-
 #endif // GLOBAL_H
 
 #ifdef GLOBAL_H_DEF
@@ -22,8 +19,5 @@ extern const char *delim_keep; // token delimiters to tokenize
 FILE *input_port  = (FILE *)STDIN_FILENO;
 FILE *output_port = (FILE *)STDOUT_FILENO;
 FILE *error_port  = (FILE *)STDERR_FILENO;
-
-const char *delim_drop = " \f\n\r\t\v";
-const char *delim_keep = "'()";
 
 #endif // GLOBAL_H_DEF

@@ -3,7 +3,7 @@
     SEXP -> ATOM | "'" SEXP | "(" REST ")"
 
     ATOM -> SYM | BOOL | NUM | CHAR | STR
-    REST -> SEXP REST | e
+    REST -> SEXP REST | "." SEXP | e
 
     SYM  -> [^'()]+
     BOOL -> "#t" | "#f"
