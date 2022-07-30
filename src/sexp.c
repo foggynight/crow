@@ -127,20 +127,7 @@ void dest_sexp(sexp_t *sexp) {
     free(sexp);
 }
 
-sexp_t *sexp_closure(sexp_t *sexp, sexp_t *env) {
-    assert(sexp); assert(sexp_is_cons(sexp));
-    assert(env); assert(sexp_is_cons(env));
-    sexp_t *body = sexp_cons(sexp_begin, sexp_cdr(sexp));
-    return make_closure(sexp_car(sexp), body, env);
-}
-
-sexp_t *sexp_primitive(sexp_t *(*func)(sexp_t *)) {
-    assert(func);
-    return make_sexp_primitive(func);
-}
-
-sexp_type_t sexp_type(const sexp_t *s) {
-    assert(s); return s->type; }
+sexp_type_t sexp_type(const sexp_t *s) { assert(s); return s->type; }
 sexp_t *sexp_type_set(sexp_t *s, sexp_type_t type) {
     assert(s); s->type = type; return s; }
 
@@ -250,6 +237,20 @@ SEXP_CXXR_SET(cdddr, sexp_cdr_set, sexp_cdr, sexp_cdr);
 #undef SEXP_CXR
 #undef SEXP_CXXR
 #undef SEXP_CXXR_SET
+
+sexp_t *sexp_closure(sexp_t *sexp, sexp_t *env) {
+    assert(sexp); assert(sexp_is_cons(sexp));
+    assert(env); assert(sexp_is_cons(env));
+    sexp_t *body = sexp_cons(sexp_begin, sexp_cdr(sexp));
+    return make_closure(sexp_car(sexp), body, env);
+}
+
+sexp_t *sexp_primitive(sexp_t *(*func)(sexp_t *)) {
+    assert(func);
+    return make_sexp_primitive(func);
+}
+
+sexp_t *bool2sexp(bool b) { return b ? sexp_t_sym : sexp_null; }
 
 bool sexp_eq_p(const sexp_t *sexp1, const sexp_t *sexp2) {
     assert(sexp1); assert(sexp2);

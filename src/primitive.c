@@ -10,9 +10,7 @@
 #include "sexp.h"
 #include "types.h"
 
-static sexp_t *null(sexp_t *args) {
-    return sexp_is_null(sexp_car(args)) ? sexp_t_sym : sexp_null;
-}
+static sexp_t *null(sexp_t *a) { return bool2sexp(sexp_is_null(sexp_car(a))); }
 
 static sexp_t *cons(sexp_t *a) { return sexp_cons(sexp_car(a), sexp_cadr(a)); }
 static sexp_t *car(sexp_t *args) { return sexp_car(sexp_car(args)); }
@@ -41,7 +39,7 @@ static sexp_t *cdr(sexp_t *args) { return sexp_cdr(sexp_car(args)); }
                 last = curr;                                    \
             }                                                   \
         }                                                       \
-        return res ? sexp_t_sym : sexp_null;                    \
+        return bool2sexp(res);                                  \
     }                                                           \
 
 NUM_PRED(eq, !=);

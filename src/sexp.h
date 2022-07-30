@@ -60,9 +60,6 @@ sexp_t *make_sexp_cons(sexp_t *car, sexp_t *cdr);
 sexp_t *make_sexp_primitive(sexp_t *(*func)(sexp_t *));
 void dest_sexp(sexp_t *sexp);
 
-sexp_t *sexp_closure(sexp_t *sexp, sexp_t *env);
-sexp_t *sexp_primitive(sexp_t *(*func)(sexp_t *));
-
 sexp_type_t sexp_type(const sexp_t *sexp);
 sexp_t *sexp_type_set(sexp_t *sexp, sexp_type_t type);
 bool sexp_is_null(const sexp_t *sexp);
@@ -98,6 +95,11 @@ SEXP_CXR(cddar);
 SEXP_CXR(cdddr);
 
 #undef SEXP_CXR
+
+sexp_t *sexp_closure(sexp_t *sexp, sexp_t *env);
+sexp_t *sexp_primitive(sexp_t *(*func)(sexp_t *));
+
+sexp_t *bool2sexp(bool b);
 
 bool sexp_eq_p(const sexp_t *sexp1, const sexp_t *sexp2);
 bool sexp_true_p(const sexp_t *sexp);
