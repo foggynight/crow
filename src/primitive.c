@@ -2,11 +2,17 @@
 // arguments of the primitive itself are contained in the sexp argument, which
 // is always a list.
 
+// TODO: Check types in all primitives.
+
 #include "primitive.h"
 
 #include "error.h"
 #include "sexp.h"
 #include "types.h"
+
+static sexp_t *null(sexp_t *args) {
+    return sexp_is_null(sexp_car(args)) ? sexp_t_sym : sexp_null;
+}
 
 static sexp_t *cons(sexp_t *a) { return sexp_cons(sexp_car(a), sexp_cadr(a)); }
 static sexp_t *car(sexp_t *args) { return sexp_car(sexp_car(args)); }
@@ -89,6 +95,7 @@ static sexp_t *sub(sexp_t *args) {
                          sexp_primitive(FUNC_NAME));                        \
     }                                                                       \
 
+PRIM_PAIR("null?", null);
 PRIM_PAIR("cons", cons);
 PRIM_PAIR("car", car);
 PRIM_PAIR("cdr", cdr);
@@ -105,6 +112,7 @@ PRIM_PAIR("-", sub);
 
 sexp_t *prim_frame(void) {
     return
+        sexp_cons(null_pair(),
         sexp_cons(cons_pair(),
         sexp_cons(car_pair(),
         sexp_cons(cdr_pair(),
@@ -117,5 +125,5 @@ sexp_t *prim_frame(void) {
         sexp_cons(add_pair(),
         sexp_cons(sub_pair(),
                   sexp_null
-    )))))))))));
+    ))))))))))));
 }
